@@ -51,7 +51,7 @@ Be sure to either set these variables or adapt the commands below:
 	mv $DOWNLOAD/TeslaClient-master Tesla/TeslaClient
 	mkdir ThirdParty
 	mkdir ThirdParty/apache
-	mkdir ThirdParty/geocoder
+	mkdir ThirdParty/geocoder-java
 	mkdir ThirdParty/resty
 
 	# Download the apache libraries
@@ -67,7 +67,7 @@ Be sure to either set these variables or adapt the commands below:
 	rm *.zip
 
 	# Download the geocoder library
-	cd ../geocoder
+	cd ../geocoder-java
 	curl -s -O http://repo1.maven.org/maven2/com/google/code/geocoder-java/geocoder-java/0.15/geocoder-java-0.15.jar
 
 	# Download the gson library
