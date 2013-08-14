@@ -8,7 +8,7 @@ package org.noroomattheinn.tesla.test;
 import org.noroomattheinn.utils.Handler;
 import org.noroomattheinn.tesla.DoorController;
 import org.noroomattheinn.tesla.DoorController.PanoCommand;
-import org.noroomattheinn.tesla.DoorState;
+import org.noroomattheinn.tesla.VehicleState;
 import org.noroomattheinn.tesla.Vehicle;
 import org.noroomattheinn.utils.CLUtils;
 
@@ -24,14 +24,14 @@ public class DoorHandler extends TeslaHandler  {
     private static final String Name = "doors";
     
     // Private Instance Variables
-    private DoorState state;
+    private VehicleState state;
     private DoorController controller;
 
 
     
     DoorHandler(Vehicle v) {
         super(Name, Description, v);
-        state = new DoorState(v);
+        state = new VehicleState(v);
         controller = new DoorController(v);
         repl.addHandler(new DoorHandler.LockHandler());
         repl.addHandler(new DoorHandler.UnlockHandler());

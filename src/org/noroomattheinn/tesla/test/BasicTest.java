@@ -8,14 +8,13 @@ package org.noroomattheinn.tesla.test;
 import java.util.List;
 import java.util.logging.Level;
 import org.noroomattheinn.tesla.ChargeState;
-import org.noroomattheinn.tesla.DoorState;
+import org.noroomattheinn.tesla.VehicleState;
 import org.noroomattheinn.tesla.DrivingState;
 import org.noroomattheinn.tesla.GUIState;
 import org.noroomattheinn.tesla.HVACState;
 import org.noroomattheinn.tesla.StreamingState;
 import org.noroomattheinn.tesla.Tesla;
 import org.noroomattheinn.tesla.Vehicle;
-import org.noroomattheinn.tesla.VehicleState;
 
 /**
  * BasicTest
@@ -54,9 +53,8 @@ public class BasicTest {
             }
             System.out.format("%s\n", vehicle);
             System.out.format("Mobile Enabled: %s\n", vehicle.mobileEnabled());
-            VehicleState state = new VehicleState(vehicle); state.refresh();
-            System.out.format("SW Version: %s\n", state.version());
-            DoorState ds = new DoorState(vehicle); ds.refresh();
+            VehicleState ds = new VehicleState(vehicle); ds.refresh();
+            System.out.format("SW Version: %s\n", ds.version());
             System.out.format("Pano Percent: %d\n", ds.panoPercent());
             System.out.format("Pano State: %s\n", ds.panoState());
             System.out.format("DoorState: %s\n", ds);
@@ -66,7 +64,7 @@ public class BasicTest {
 //            ds.refresh();
 //            System.out.format("Pano Percent: %d\n", ds.panoPercent());
 //            System.out.format("Pano State: %s\n", ds.panoState());
-//            System.out.format("DoorState: %s\n", ds);
+//            System.out.format("VehicleState: %s\n", ds);
 
             GUIState gui = new GUIState(vehicle); gui.refresh();
             System.out.format("Charge Rate Units: %s\n", gui.chargeRateUnits());
