@@ -62,6 +62,10 @@ public class ChargeState extends APICall {
     public String   scheduledChargeStartTime() { return getString("scheduled_charging_start_time"); }
     public String   UserChargeEnableRequest()  { return getString("user_charge_enable_request"); }
 
+    public int      chargeLimitSOC()       { return getInteger("charge_limit_soc"); }
+    public int      chargeLimitSOCMax()       { return getInteger("charge_limit_soc_max"); }
+    public int      chargeLimitSOCMin()       { return getInteger("charge_limit_soc_min"); }
+    public int      chargeLimitSOCStd()       { return getInteger("charge_limit_soc_std"); }
     
     //
     // Nested Classes

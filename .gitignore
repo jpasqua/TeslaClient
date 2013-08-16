@@ -3,5 +3,6 @@
 /dist/
 /cookies.txt
 /manifest.mf
-/*.log
+/tesla.log*
 /Interactive
+/.DS_Store

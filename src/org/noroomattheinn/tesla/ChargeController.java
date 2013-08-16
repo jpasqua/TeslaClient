@@ -13,11 +13,9 @@ package org.noroomattheinn.tesla;
 
 public class ChargeController extends APICall {
     // Instance Variables - These are effectively constants
-    private final String startCommand;
-    private final String stopCommand;
-    private final String maxRangeCommand;
-    private final String stdRangeCommand;
-    
+    private final String startCommand, stopCommand;
+    private final String maxRangeCommand, stdRangeCommand;
+    private final String chargePercentFormat;
     
     //
     // Constructors
@@ -29,6 +27,7 @@ public class ChargeController extends APICall {
         stopCommand = Tesla.command(v.getVID(), "charge_stop");
         maxRangeCommand = Tesla.command(v.getVID(), "charge_max_range");
         stdRangeCommand = Tesla.command(v.getVID(), "charge_standard");
+        chargePercentFormat = Tesla.command(v.getVID(), "set_charge_limit?percent=%d");
     }
 
     
@@ -47,6 +46,13 @@ public class ChargeController extends APICall {
     
     public Result setChargeRange(boolean max) {
         setAndRefresh(max ? maxRangeCommand : stdRangeCommand);
+        return new Result(this);
+    }
+    
+    public Result setChargePercent(int percent) {
+        if (percent < 1 || percent > 100)
+            return new Result(false, "value out of range");
+        setAndRefresh(String.format(chargePercentFormat, percent));
         return new Result(this);
     }
 }

@@ -6,6 +6,7 @@
 package org.noroomattheinn.tesla;
 
 import java.io.IOException;
+import java.util.Date;
 import java.util.logging.Level;
 import us.monoid.json.JSONException;
 import us.monoid.json.JSONObject;
@@ -31,8 +32,8 @@ public abstract class APICall {
     private String      vid;
     private JSONObject  theState;
     private String      endpoint;
+    private long        lastRefreshTime;
     protected Vehicle   v;
-
     
     //
     // Constructors
@@ -49,6 +50,7 @@ public abstract class APICall {
         this.vid = v.getVID();
         this.endpoint = null;
         this.theState = null;
+        this.lastRefreshTime = 0;   // Has never been refreshed (successfully)
     }
     
     
@@ -63,9 +65,7 @@ public abstract class APICall {
     
     public boolean refresh() {
         try {
-            if (endpoint != null) {
-                theState = api.json(endpoint).object();
-            }
+            if (endpoint != null)  setState(api.json(endpoint).object());
             return true;
         } catch (IOException | JSONException ex) {
             Tesla.logger.log(Level.FINEST, null, ex);
@@ -74,12 +74,17 @@ public abstract class APICall {
         }
     }
     
-    protected void setState(JSONObject newState) {this.theState = newState;}
+    
+    protected void setState(JSONObject newState) {
+        this.theState = newState;
+        lastRefreshTime = new Date().getTime();
+    }
 
     private void setEndpoint(String newEndpoint) { this.endpoint = newEndpoint; }
 
     public String getStateName() { return "State"; }
-    
+    public final long lastRefreshTime() { return lastRefreshTime; }
+
     //
     // Field Accessor Methods
     //

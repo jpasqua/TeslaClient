@@ -32,16 +32,16 @@ public class Vehicle {
     private Resty   api;
 
     // Instance variables that describe a Vehicle
-    private String  UNKNOWN_color;
-    private String  UNKNOWN_display_name;
-    private String  streamingVID;
-    private String  userID;
-    private String  vehicleID;
-    private String  vin;
-    private String  streamingTokens[];
-    private boolean online;
-    private Options options;
-    private GUIState cachedGUIOptions;
+    private String      UNKNOWN_color;
+    private String      UNKNOWN_display_name;
+    private String      streamingVID;
+    private String      userID;
+    private String      vehicleID;
+    private String      vin;
+    private String      streamingTokens[];
+    private boolean     online;
+    private Options     options;
+    private GUIState    lastKnownGUIState;
                 
     
     //
@@ -75,10 +75,9 @@ public class Vehicle {
         // Handle the Options
         options = new Options(description.optString("option_codes"));
         
-        // The GUI options don't tend to change much, so cache a copy here...
-        cachedGUIOptions = new GUIState(this);
-        if (cachedGUIOptions.refresh() == false)
-            cachedGUIOptions = null;
+        // Some options don't tend to change much, so get a copy here for reference
+        lastKnownGUIState = new GUIState(this);
+        while (lastKnownGUIState.refresh() == false)  {}
     }
     
     
@@ -92,7 +91,7 @@ public class Vehicle {
     public boolean  online() { return online; }
     public Options  getOptions() { return options; }
     public String   getStreamingToken() { return streamingTokens[0]; }
-    public GUIState getCachedGUIOptions() { return cachedGUIOptions; }
+    public GUIState getLastKnownGUIState() { return lastKnownGUIState; }
     public boolean  mobileEnabled() {
         try {
             JSONResource resource = api.json(Tesla.endpoint(vehicleID, "mobile_enabled"));

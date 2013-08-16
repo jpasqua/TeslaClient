@@ -32,6 +32,7 @@ public class ChargeHandler extends TeslaHandler  {
         controller = new ChargeController(vehicle);
         repl.addHandler(new StartHandler());
         repl.addHandler(new StopHandler());
+        repl.addHandler(new PercentHandler());
         repl.addHandler(new TargetHandler());
         repl.addHandler(new DisplayHandler());
     }
@@ -57,6 +58,15 @@ public class ChargeHandler extends TeslaHandler  {
                 System.out.format("Charge State:\n%s\n", state);
             else
                 System.err.println("Problem communicating with Tesla");            
+            return true;
+        }
+    }
+    
+    class PercentHandler extends Handler {
+        PercentHandler() { super("percent", "Set Charge Percent", "%"); }
+        public boolean execute() {
+            int percent = (int)CLUtils.getNumberInRange("Charge Percent", 0, 100);
+            controller.setChargePercent(percent);
             return true;
         }
     }

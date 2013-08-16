@@ -73,6 +73,10 @@ public class BasicTest {
             System.out.format("Fan Status: %d\n", hvac.fanStatus());
             ChargeState cs = new ChargeState(vehicle); cs.refresh();
             System.out.format("FastChargerPresent: %s\n", cs.fastChargerPresent());
+            System.out.format(
+                    "SOC Limit: %d, Min %d, Max: %d, Std: %d\n",
+                    cs.chargeLimitSOC(), cs.chargeLimitSOCMin(),
+                    cs.chargeLimitSOCMax(), cs.chargeLimitSOCStd());
             System.out.format("ChargeState dump: %s\n", cs.toString());
             DrivingState drs = new DrivingState(vehicle); drs.refresh();
             System.out.format("DrivingState dump: %s\n", drs.toString());
