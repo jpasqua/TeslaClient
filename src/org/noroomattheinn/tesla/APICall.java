@@ -8,6 +8,7 @@ package org.noroomattheinn.tesla;
 import java.io.IOException;
 import java.util.Date;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import us.monoid.json.JSONException;
 import us.monoid.json.JSONObject;
 import us.monoid.web.Resty;
@@ -27,6 +28,11 @@ import us.monoid.web.Resty;
  */
 
 public abstract class APICall {
+    private static double MaxRequestRate = 20.0 / (1000.0 * 60.0);  // 20 requests per minute
+    private static long startTime = new Date().getTime();
+    private static long requests = 0;
+    private static final Logger logger = Logger.getLogger(APICall.class.getName());
+    
     // Instance Variables
     private Resty       api;
     private String      vid;
@@ -49,7 +55,7 @@ public abstract class APICall {
         this.api = v.getAPI();
         this.vid = v.getVID();
         this.endpoint = null;
-        this.theState = null;
+        this.theState = new JSONObject();
         this.lastRefreshTime = 0;   // Has never been refreshed (successfully)
     }
     
@@ -65,15 +71,16 @@ public abstract class APICall {
     
     public boolean refresh() {
         try {
+            honorRateLimit();
             if (endpoint != null)  setState(api.json(endpoint).object());
+            requests++;
             return true;
         } catch (IOException | JSONException ex) {
             Tesla.logger.log(Level.FINEST, null, ex);
-            theState = null;
+            theState = new JSONObject();
             return false;
         }
     }
-    
     
     protected void setState(JSONObject newState) {
         this.theState = newState;
@@ -114,5 +121,24 @@ public abstract class APICall {
         }
     }
     
+    private void honorRateLimit() {
+        while (true) {
+            if (requests < 30) return;  // Don't worry too much until there is some history
+            
+            long now = new Date().getTime();
+            long elapsedMillis = now - startTime;
+            double rate = ((double) requests) / elapsedMillis;
+            if (rate > MaxRequestRate) {
+                try {
+                    logger.log(
+                        Level.INFO, "Throttling request rate. Requests: {0}, Millis: {1}\n",
+                        new Object[]{requests, elapsedMillis});
+                    Thread.sleep(  (long) (((double)requests)/MaxRequestRate +  startTime - now ) );
+                } catch (InterruptedException ex) {
+                    logger.log(Level.SEVERE, null, ex);
+                }
+            } else return;
+        }
+    }
     
 }

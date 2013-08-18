@@ -135,7 +135,7 @@ public class Tesla {
             // and password. This sets the user_credentials cookie
             FormContent fc = Resty.form(
                     "user_session[email]=" + username +
-                    "&user_session[password]=" + password);
+                    "&user_session[password]=" + Resty.enc(password));
             text = api.text(endpoint("login"), fc);
 
             // Save the login information for next time...

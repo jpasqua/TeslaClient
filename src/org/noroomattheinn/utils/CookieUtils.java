@@ -184,8 +184,9 @@ public class CookieUtils {
      */
     public static boolean writeCookies(String cookieFileName, List<HttpCookie> cookies) {
         File f = new File(cookieFileName);
-        if (f.exists())
-            return false;
+//        Always write the cookies out because things may have changed since last time        
+//        if (f.exists())
+//            return false;
         try (PrintStream out = new PrintStream(new FileOutputStream(cookieFileName))) {
             for (HttpCookie c : cookies) {
                 out.println(
