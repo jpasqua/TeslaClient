@@ -225,6 +225,9 @@ public class CookieUtils {
         return written;
     }
     
-
+    public static void clearCookies() {
+        if (cookieStore != null)
+            cookieStore.removeAll();
+    }
 }
 

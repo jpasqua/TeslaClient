@@ -38,7 +38,7 @@ public abstract class APICall {
     private String      vid;
     private JSONObject  theState;
     private String      endpoint;
-    private long        lastRefreshTime;
+    private boolean     hasValidData;
     protected Vehicle   v;
     
     //
@@ -56,7 +56,7 @@ public abstract class APICall {
         this.vid = v.getVID();
         this.endpoint = null;
         this.theState = new JSONObject();
-        this.lastRefreshTime = 0;   // Has never been refreshed (successfully)
+        this.hasValidData = false;  // Has never been refreshed (successfully)
     }
     
     
@@ -78,19 +78,22 @@ public abstract class APICall {
         } catch (IOException | JSONException ex) {
             Tesla.logger.log(Level.FINEST, null, ex);
             theState = new JSONObject();
+            hasValidData = false;
             return false;
         }
     }
     
+    protected void invalidate() { hasValidData = false; }
+    
     protected void setState(JSONObject newState) {
         this.theState = newState;
-        lastRefreshTime = new Date().getTime();
+        hasValidData = true;
     }
 
     private void setEndpoint(String newEndpoint) { this.endpoint = newEndpoint; }
 
     public String getStateName() { return "State"; }
-    public final long lastRefreshTime() { return lastRefreshTime; }
+    public final boolean hasValidData() { return hasValidData; }
 
     //
     // Field Accessor Methods

@@ -31,7 +31,7 @@ public class BasicTest {
         Tesla t = new Tesla();
                 
         if (args.length == 2) {
-            if (!t.connect(args[0], args[1])) {
+            if (!t.connect(args[0], args[1], true)) {
                 System.err.println("Unable to connect with supplied u/p");
                 System.exit(1);
             }

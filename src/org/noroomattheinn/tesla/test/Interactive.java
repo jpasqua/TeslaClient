@@ -91,7 +91,7 @@ public class Interactive  {
                 System.out.println("Sorry, Credentials required");
                 String username = CLUtils.getLine("Username");
                 String password = CLUtils.getPassword();
-                if (!tesla.connect(username, password)) {
+                if (!tesla.connect(username, password, true)) {
                     System.err.println("Unable to connect with those credentials");
                     return true;
                 }

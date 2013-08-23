@@ -75,16 +75,17 @@ public class StreamingState extends APICall {
     public boolean refresh(int waitMillis) {
         ensureProducer();
         
-        JSONObject rawValues = EmptyJSON;        
         try {
-            rawValues = queue.poll(waitMillis, TimeUnit.MILLISECONDS);
-            if (rawValues == null)
-                rawValues = EmptyJSON;
+            JSONObject rawValues = queue.poll(waitMillis, TimeUnit.MILLISECONDS);
+            if (rawValues != null && rawValues != EmptyJSON) {
+                setState(rawValues);
+                return true;
+            }
         } catch (InterruptedException ex) {
             Tesla.logger.log(Level.INFO, null, ex);
         }
-        setState(rawValues);
-        return (rawValues != EmptyJSON);
+        invalidate();
+        return false;
     }
     
     

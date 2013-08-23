@@ -41,8 +41,8 @@ public class Vehicle {
     private String      streamingTokens[];
     private boolean     online;
     private Options     options;
-    private GUIState    lastKnownGUIState;
-                
+    private GUIState    cachedGUIState;
+    private VehicleState    cachedVehicleState;
     
     //
     // Constructors
@@ -76,8 +76,11 @@ public class Vehicle {
         options = new Options(description.optString("option_codes"));
         
         // Some options don't tend to change much, so get a copy here for reference
-        lastKnownGUIState = new GUIState(this);
-        while (lastKnownGUIState.refresh() == false)  {}
+        cachedGUIState = new GUIState(this);
+        while (cachedGUIState.refresh() == false)  {}
+        
+        cachedVehicleState = new VehicleState(this);
+        while (cachedVehicleState.refresh() == false)  {}
     }
     
     
@@ -91,7 +94,8 @@ public class Vehicle {
     public boolean  online() { return online; }
     public Options  getOptions() { return options; }
     public String   getStreamingToken() { return streamingTokens[0]; }
-    public GUIState getLastKnownGUIState() { return lastKnownGUIState; }
+    public GUIState cachedGUIState() { return cachedGUIState; }
+    public VehicleState cachedVehicleState() { return cachedVehicleState; }
     public boolean  mobileEnabled() {
         try {
             JSONResource resource = api.json(Tesla.endpoint(vehicleID, "mobile_enabled"));

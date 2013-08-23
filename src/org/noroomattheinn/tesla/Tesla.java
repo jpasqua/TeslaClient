@@ -123,10 +123,11 @@ public class Tesla {
         return false;
     }
     
-    private boolean login(String username, String password) {
+    private boolean login(String username, String password, boolean remember) {
         try {
             TextResource text;
-                        
+            
+            CookieUtils.clearCookies();
             // Do the first phase of the login. This sets the _s_portal_session
             // cookie. This must be followed by phase 2 of the login
             text = api.text(endpoint("login"));
@@ -141,7 +142,7 @@ public class Tesla {
             // Save the login information for next time...
             this.username = username;
             stashUsername();
-            CookieUtils.fetchAndWriteCookies(CookiesFile);
+            if (remember) CookieUtils.fetchAndWriteCookies(CookiesFile);
             return true;
         } catch (IOException ex) {
             logger.log(Level.SEVERE, null, ex);
@@ -168,9 +169,9 @@ public class Tesla {
      * @return  true    The connection succeeded
      *          false   No dice, couldn't connect or fetch vehicles
      */
-    public boolean connect(String username, String password) {
+    public boolean connect(String username, String password, boolean remember) {
         vehicles.clear();
-        return login(username, password) && fetchVehiclesInto(vehicles);
+        return login(username, password, remember) && fetchVehiclesInto(vehicles);
     }
 
     
