@@ -1,5 +1,6 @@
 /*
- * GeoTest.java - Copyright(c) 2013  All Rights Reserved, Joe Pasqua
+ * GeoTest.java - Copyright(c) 2013 Joe Pasqua
+ * Provided under the MIT License. See the LICENSE file for details.
  * Created: Jul 8, 2013
  */
 

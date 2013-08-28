@@ -1,5 +1,6 @@
 /*
- * LocationHandler.java - Copyright(c) 2013  All Rights Reserved, Joe Pasqua
+ * LocationHandler.java - Copyright(c) 2013 Joe Pasqua
+ * Provided under the MIT License. See the LICENSE file for details.
  * Created: Jul 6, 2013
  */
 
