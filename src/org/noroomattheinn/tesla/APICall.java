@@ -29,9 +29,9 @@ import us.monoid.web.Resty;
  */
 
 public abstract class APICall {
-    private static double MaxRequestRate = 20.0 / (1000.0 * 60.0);  // 20 requests per minute
+    private static double MaxRequestRate = 20.0 / (1000.0 * 60.0);  // 20 requests/minute
     private static long startTime = new Date().getTime();
-    private static long requests = 0;
+    protected static long requestCount = 0;
     private static final Logger logger = Logger.getLogger(APICall.class.getName());
     
     // Instance Variables
@@ -74,7 +74,7 @@ public abstract class APICall {
         try {
             honorRateLimit();
             if (endpoint != null)  setState(api.json(endpoint).object());
-            requests++;
+            requestCount++;
             return true;
         } catch (IOException | JSONException ex) {
             Tesla.logger.log(Level.FINEST, null, ex);
@@ -125,19 +125,19 @@ public abstract class APICall {
         }
     }
     
-    private void honorRateLimit() {
+    protected void honorRateLimit() {
         while (true) {
-            if (requests < 30) return;  // Don't worry too much until there is some history
+            if (requestCount < 30) return;  // Don't worry too much until there is some history
             
             long now = new Date().getTime();
             long elapsedMillis = now - startTime;
-            double rate = ((double) requests) / elapsedMillis;
+            double rate = ((double) requestCount) / elapsedMillis;
             if (rate > MaxRequestRate) {
                 try {
                     logger.log(
                         Level.INFO, "Throttling request rate. Requests: {0}, Millis: {1}\n",
-                        new Object[]{requests, elapsedMillis});
-                    Thread.sleep(  (long) (((double)requests)/MaxRequestRate +  startTime - now ) );
+                        new Object[]{requestCount, elapsedMillis});
+                    Thread.sleep(  (long) (((double)requestCount)/MaxRequestRate +  startTime - now ) );
                 } catch (InterruptedException ex) {
                     logger.log(Level.SEVERE, null, ex);
                 }

@@ -8,6 +8,7 @@ package org.noroomattheinn.tesla.test;
 
 import org.noroomattheinn.utils.Handler;
 import org.noroomattheinn.tesla.StreamingState;
+import org.noroomattheinn.tesla.SnapshotState;
 import org.noroomattheinn.tesla.Vehicle;
 
 /**
@@ -22,12 +23,13 @@ public class StreamingHandler extends TeslaHandler  {
     private static final String Name = "streaming";
     
     // Private Instance Variables
-    private StreamingState state;
+    //private StreamingState state;
+    private SnapshotState state;
 
     
     StreamingHandler(Vehicle v) {
         super(Name, Description, v);
-        state = new StreamingState(v);
+        state = new SnapshotState(v);
         repl.addHandler(new StreamingHandler.DisplayHandler());
     }
     
@@ -40,7 +42,7 @@ public class StreamingHandler extends TeslaHandler  {
         DisplayHandler() { super("display", "Display streaming state", "d"); }
         public boolean execute() {
             System.out.println("Streaming Status:");
-            while (state.refresh()) {
+            if (state.refresh()) {
                 System.out.println(state);
             }
             return true;

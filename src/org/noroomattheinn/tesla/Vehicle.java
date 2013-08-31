@@ -40,7 +40,7 @@ public class Vehicle {
     private String      vehicleID;
     private String      vin;
     private String      streamingTokens[];
-    private boolean     online;
+    private String      status;
     private Options     options;
     private GUIState    cachedGUIState;
     private VehicleState    cachedVehicleState;
@@ -58,8 +58,7 @@ public class Vehicle {
         userID = description.optString("user_id");
         streamingVID = description.optString("vehicle_id");
         vin = description.optString("vin");
-        String state = description.optString("state");
-        online = (state != null && state.equals("online"));
+        status = description.optString("state");
         
         // Get the streaming tokens if they exist...
         streamingTokens = new String[2];
@@ -92,7 +91,7 @@ public class Vehicle {
     public String   getVIN() { return vin; }
     public String   getVID() { return vehicleID; }
     public String   getStreamingVID() { return streamingVID; }
-    public boolean  online() { return online; }
+    public String   status() { return status; }
     public Options  getOptions() { return options; }
     public String   getStreamingToken() { return streamingTokens[0]; }
     public GUIState cachedGUIState() { return cachedGUIState; }
@@ -123,9 +122,9 @@ public class Vehicle {
     public String toString() {
         return String.format(
                 "VIN: %s\n" +
-                "online: %b\n" +
+                "status: %s\n" +
                 "options: [\n%s]",
-                vin, online, options.toString()
+                vin, status, options.toString()
             );
     }
 

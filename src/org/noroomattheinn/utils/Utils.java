@@ -102,10 +102,39 @@ public class Utils {
     public static double cToF(double temp) { return temp * 9.0/5.0 + 32; }
     public static double fToC(double temp) { return (temp-32) * 5.0/9.0; }
     public static String yesNo(boolean b) { return b ? "Yes" : "No"; }
+    public static final double KilometersPerMile = 1.60934;
+    public static double kToM(double k) { return k/KilometersPerMile; }
+    public static double mToK(double m) { return m * KilometersPerMile; }
 
     @SuppressWarnings("unchecked")
     public static <E> E cast(Object obj) {
         return (E) obj;
     }
+    
+    public static <T extends Comparable<T>> T clamp(T val, T min, T max) {
+        if (val.compareTo(min) < 0) {
+            return min;
+        } else if (val.compareTo(max) > 0) {
+            return max;
+        } else {
+            return val;
+        }
+    }
 
+    public static double percentChange(double oldValue, double newValue) {
+        if (oldValue == 0) return 1.0;
+        return Math.abs((oldValue - newValue)/oldValue);
+    }
+    
+    public static void sleep(long timeInMillis) {
+        long timeToSleep = timeInMillis;
+        long now = System.currentTimeMillis();
+        try {
+            while (timeToSleep > 0) {
+                Thread.sleep(timeToSleep);
+                timeToSleep = timeInMillis - (System.currentTimeMillis() - now);
+                timeToSleep = Math.min(timeToSleep, timeInMillis);
+            }
+        } catch (InterruptedException ex) { }
+    }
 }

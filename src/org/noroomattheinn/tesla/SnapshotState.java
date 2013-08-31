@@ -1,5 +1,5 @@
 /*
- * StreamingState.java - Copyright(c) 2013 Joe Pasqua
+ * SnapshotState.java - Copyright(c) 2013 Joe Pasqua
  * Provided under the MIT License. See the LICENSE file for details.
  * Created: Jul 11, 2013
  */
@@ -13,9 +13,6 @@ import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
@@ -31,13 +28,9 @@ import us.monoid.web.TextResource;
  * @author Joe Pasqua <joe at NoRoomAtTheInn dot org>
  */
 
-public class StreamingState extends APICall {
+public class SnapshotState extends APICall {
     // Class Variables
-    private static BlockingQueue<JSONObject> queue = new ArrayBlockingQueue<>(25);    
-    private static Thread producerThread = null;
-    private static JSONObject EmptyJSON = constructEmpty();
-    
-    
+
     //
     // Field Accessor Methods
     //
@@ -59,31 +52,22 @@ public class StreamingState extends APICall {
     // Constructors
     //
     
-    public StreamingState(Vehicle v) {
+    public SnapshotState(Vehicle v) {
         super(v);
     }
     
 
     // Accessors
-    public String getStateName() { return "Streaming State"; }
+    public String getStateName() { return "Unstreamed State"; }
     
     // Update Methods
     
     public boolean refresh() {
-        return refresh(5000);
-    }
-    
-    public boolean refresh(int waitMillis) {
-        ensureProducer();
-        
-        try {
-            JSONObject rawValues = queue.poll(waitMillis, TimeUnit.MILLISECONDS);
-            if (rawValues != null && rawValues != EmptyJSON) {
-                setState(rawValues);
-                return true;
-            }
-        } catch (InterruptedException ex) {
-            Tesla.logger.log(Level.INFO, null, ex);
+        BufferedReader reader = prepareToProduce();
+        JSONObject val;
+        if (reader != null && (val = produce(reader)) != null) {
+            setState(val);
+            return true;
         }
         invalidate();
         return false;
@@ -102,7 +86,7 @@ public class StreamingState extends APICall {
                 "Charge Info: [SoC: %d, Power: %d]\n" +
                 "Odometer: %7.1f\n" +
                 "Range: %d\n",
-                timestamp(),
+                timestamp().getTime(),
                 speed(),
                 estLat(), estLng(), estHeading(), elevation(),
                 soc(), power(),
@@ -112,94 +96,23 @@ public class StreamingState extends APICall {
     }
 
     
-    //
-    // Utility Methods
-    //
-    
-    private synchronized void ensureProducer() {
-        if (producerThread == null || producerThread.getState() == Thread.State.TERMINATED) {
-            producerThread = new Thread(new Producer(v, queue));
-            producerThread.start();
-        }
-    }
-
-    private static JSONObject constructEmpty() {
-        JSONObject jo = new JSONObject();
-        try {
-            jo.put(Keys.timestamp, "0");
-            jo.put(Keys.speed, "0");
-            jo.put(Keys.odometer, "0");
-            jo.put(Keys.soc, "0");
-            jo.put(Keys.elevation, "0");
-            jo.put(Keys.est_heading, "0");
-            jo.put(Keys.est_lat, "0");
-            jo.put(Keys.est_lng, "0");
-            jo.put(Keys.power, "0");
-            jo.put(Keys.shift_state, "");
-            jo.put(Keys.range, "0");
-        } catch (JSONException e) {
-            // ASSERT: Can't Happen
-        }
-        return jo;
-    }
-    
-    
-    //
-    // Nested Classes
-    //
-    
     public enum Keys {
         timestamp, odometer, speed, soc, elevation, est_heading,
         est_lat, est_lng, power, shift_state, range};
 
-    class Producer implements Runnable {
-        // Constants
-        private static final int ReadTimeoutInMillis = 5 * 1000;
-        private static final int WakeupRetries = 3;
         private static final String endpointFormat = 
                 "https://streaming.vn.teslamotors.com/stream/%s/?values=%s";
 
         // Instance Variables
-        private final BlockingQueue<JSONObject> queue;
-        private final Vehicle vehicle;
-        private StreamingState.Keys[] keyList = StreamingState.Keys.values();
+        private Keys[] keyList = Keys.values();
         private final String allKeys =
                 StringUtils.join(keyList, ',', 1, keyList.length);
 
-
-        //
-        // Constructors
-        //
-
-        public Producer(Vehicle v, BlockingQueue<JSONObject> q) {
-            this.vehicle = v;
-            this.queue = q;
-        }
-
         
-        //
-        // Methods that implement the Producer paradigm
-        //
-        
-        public void run() {
-            try {
-                BufferedReader reader = prepareToProduce();
-
-                while (true) {
-                    JSONObject val = produce(reader);
-                    queue.put(val);
-                    if (val == EmptyJSON)
-                        return;
-                }
-            } catch (InterruptedException ex) {
-                Tesla.logger.log(Level.INFO, null, ex);
-            }
-        }
-
-        JSONObject produce(BufferedReader reader) {        
+        private JSONObject produce(BufferedReader reader) {        
             try {
                 String line = reader.readLine();
-                if (line == null) return EmptyJSON;
+                if (line == null) return null;
 
                 JSONObject jo = new JSONObject();
                 String vals[] = line.split(",");
@@ -208,49 +121,58 @@ public class StreamingState extends APICall {
                         jo.put(keyList[i], vals[i]);
                     } catch (JSONException ex) {
                         Tesla.logger.log(Level.SEVERE, "Malformed data", ex);
-                        return EmptyJSON;
+                        return null;
                     }
                 }
                 return jo;
             } catch (IOException ex) {
                 Tesla.logger.log(Level.FINEST, "Timeouts are expected here...", ex);
-                return EmptyJSON;
+                return null;
             }
         }
 
-        //
-        // Utility Methods
-        //
-
         private BufferedReader prepareToProduce() {
-            Vehicle withToken = getVehicleWithAuthToken(vehicle);
-            if (withToken == null)
-                return null;
+            BufferedReader r = prepareInternal();
+            if (r != null) return r;
+            return prepareInternal();   // Try again. Auth tokens may have expired.
+        }
 
-            BufferedReader reader = null;
+        private Vehicle vehicleWithToken = null;
+        
+        private BufferedReader prepareInternal() {
+            if (vehicleWithToken == null) {
+                vehicleWithToken = getVehicleWithAuthToken(v);
+                if (vehicleWithToken == null)
+                    return null;
+            }
+
             try {
                 String endpoint = String.format(
-                        endpointFormat, withToken.getStreamingVID(), allKeys);
+                        endpointFormat, vehicleWithToken.getStreamingVID(), allKeys);
 
                 honorRateLimit();
-                TextResource r = getAuthAPI(withToken).text(endpoint);
+                TextResource r = getAuthAPI(vehicleWithToken).text(endpoint);
                 requestCount++;
-                reader = new BufferedReader(new InputStreamReader(r.stream()));
+                return new BufferedReader(new InputStreamReader(r.stream()));
             } catch (IOException ex) {
                 // Timed out or other problem
                 Tesla.logger.log(Level.INFO, null, ex);
             }
-            return reader;
+            vehicleWithToken = null;    // Tokens may have expired, force refetch
+            return null;
         }
-
+        
+        
         private void setAuthHeader(Resty api, String username, String authToken) {
             byte[] authString = (username + ":" + authToken).getBytes();
             String encodedString = Base64.encodeBase64String(authString);
             api.withHeader("Authorization", "Basic " + encodedString);
         }
 
-        private Vehicle getVehicleWithAuthToken(Vehicle basedOn) {
+        private static final int WakeupRetries = 3;
+        private static final int ReadTimeoutInMillis = 5 * 1000;
 
+        private Vehicle getVehicleWithAuthToken(Vehicle basedOn) {
             String vid = basedOn.getVID();
             // Remember this so we can find the right vehicle when we fetch
             // the updated list of vehicles after doing the wakeup
@@ -296,6 +218,3 @@ public class StreamingState extends APICall {
         }
 
     }
-
-    
-}
