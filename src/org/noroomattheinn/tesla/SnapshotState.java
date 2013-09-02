@@ -151,12 +151,12 @@ public class SnapshotState extends APICall {
                         endpointFormat, vehicleWithToken.getStreamingVID(), allKeys);
 
                 honorRateLimit();
+                requestCount++;     // Count it even if it fails...
                 TextResource r = getAuthAPI(vehicleWithToken).text(endpoint);
-                requestCount++;
                 return new BufferedReader(new InputStreamReader(r.stream()));
             } catch (IOException ex) {
                 // Timed out or other problem
-                Tesla.logger.log(Level.INFO, null, ex);
+                Tesla.logger.log(Level.INFO, "Failed getting streaming data. HANDLED.", ex);
             }
             vehicleWithToken = null;    // Tokens may have expired, force refetch
             return null;

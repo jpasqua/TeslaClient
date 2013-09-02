@@ -6,6 +6,7 @@
 
 package org.noroomattheinn.utils;
 
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -127,14 +128,23 @@ public class Utils {
     }
     
     public static void sleep(long timeInMillis) {
-        long timeToSleep = timeInMillis;
-        long now = System.currentTimeMillis();
         try {
-            while (timeToSleep > 0) {
-                Thread.sleep(timeToSleep);
-                timeToSleep = timeInMillis - (System.currentTimeMillis() - now);
-                timeToSleep = Math.min(timeToSleep, timeInMillis);
-            }
+            Thread.sleep(timeInMillis);
         } catch (InterruptedException ex) { }
     }
+    
+    public static int compareVersions(String versionA, String versionB) {
+        String[] partsOfA = versionA.split("\\.");
+        String[] partsOfB = versionB.split("\\.");
+        int shortest = Math.min(partsOfA.length, partsOfB.length);
+
+        int i = 0;
+        while (i < shortest && partsOfA[i].equals(partsOfB[i])) { i++; }
+
+        if (i < shortest)
+            return Integer.valueOf(partsOfA[i]) - Integer.valueOf(partsOfB[i]);
+
+        return partsOfA.length - partsOfB.length;
+    }
+
 }

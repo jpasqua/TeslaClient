@@ -32,7 +32,6 @@ public abstract class APICall {
     private static double MaxRequestRate = 20.0 / (1000.0 * 60.0);  // 20 requests/minute
     private static long startTime = new Date().getTime();
     protected static long requestCount = 0;
-    private static final Logger logger = Logger.getLogger(APICall.class.getName());
     
     // Instance Variables
     private Resty       api;
@@ -73,11 +72,13 @@ public abstract class APICall {
     public boolean refresh() {
         try {
             honorRateLimit();
-            if (endpoint != null)  setState(api.json(endpoint).object());
-            requestCount++;
+            if (endpoint != null) {
+                requestCount++;     // Count it even if it fails
+                setState(api.json(endpoint).object());
+            }
             return true;
         } catch (IOException | JSONException ex) {
-            Tesla.logger.log(Level.FINEST, null, ex);
+            Tesla.logger.log(Level.FINEST, "Failed refreshing. HANDLED.", ex);
             theState = new JSONObject();
             hasValidData = false;
             return false;
@@ -134,12 +135,12 @@ public abstract class APICall {
             double rate = ((double) requestCount) / elapsedMillis;
             if (rate > MaxRequestRate) {
                 try {
-                    logger.log(
+                    Tesla.logger.log(
                         Level.INFO, "Throttling request rate. Requests: {0}, Millis: {1}\n",
                         new Object[]{requestCount, elapsedMillis});
-                    Thread.sleep(  (long) (((double)requestCount)/MaxRequestRate +  startTime - now ) );
+                    Thread.sleep(5 * 1000);     // Arbitrary amount of wait time
                 } catch (InterruptedException ex) {
-                    logger.log(Level.SEVERE, null, ex);
+                    Tesla.logger.log(Level.SEVERE, null, ex);
                 }
             } else return;
         }
