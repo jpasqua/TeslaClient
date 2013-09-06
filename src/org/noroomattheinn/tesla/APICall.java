@@ -9,7 +9,6 @@ package org.noroomattheinn.tesla;
 import java.io.IOException;
 import java.util.Date;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import us.monoid.json.JSONException;
 import us.monoid.json.JSONObject;
 import us.monoid.web.Resty;
