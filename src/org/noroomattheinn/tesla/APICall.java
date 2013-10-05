@@ -7,11 +7,10 @@
 package org.noroomattheinn.tesla;
 
 import java.io.IOException;
-import java.util.Date;
 import java.util.logging.Level;
+import org.noroomattheinn.utils.RestyWrapper;
 import us.monoid.json.JSONException;
 import us.monoid.json.JSONObject;
-import us.monoid.web.Resty;
 
 /**
  * APICall: This class is the parent of all API interactions for State and
@@ -28,12 +27,9 @@ import us.monoid.web.Resty;
  */
 
 public abstract class APICall {
-    private static double MaxRequestRate = 20.0 / (1000.0 * 60.0);  // 20 requests/minute
-    private static long startTime = new Date().getTime();
-    protected static long requestCount = 0;
     
     // Instance Variables
-    private Resty       api;
+    private RestyWrapper api;
     private String      vid;
     private JSONObject  theState;
     private String      endpoint;
@@ -70,9 +66,7 @@ public abstract class APICall {
     
     public boolean refresh() {
         try {
-            honorRateLimit();
             if (endpoint != null) {
-                requestCount++;     // Count it even if it fails
                 setState(api.json(endpoint).object());
             }
             return true;
@@ -122,26 +116,6 @@ public abstract class APICall {
             return theState.toString(4);
         } catch (JSONException ex) {
             return theState.toString();
-        }
-    }
-    
-    protected void honorRateLimit() {
-        while (true) {
-            if (requestCount < 30) return;  // Don't worry too much until there is some history
-            
-            long now = new Date().getTime();
-            long elapsedMillis = now - startTime;
-            double rate = ((double) requestCount) / elapsedMillis;
-            if (rate > MaxRequestRate) {
-                try {
-                    Tesla.logger.log(
-                        Level.INFO, "Throttling request rate. Requests: {0}, Millis: {1}\n",
-                        new Object[]{requestCount, elapsedMillis});
-                    Thread.sleep(5 * 1000);     // Arbitrary amount of wait time
-                } catch (InterruptedException ex) {
-                    Tesla.logger.log(Level.SEVERE, null, ex);
-                }
-            } else return;
         }
     }
     

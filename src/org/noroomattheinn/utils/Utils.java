@@ -6,7 +6,6 @@
 
 package org.noroomattheinn.utils;
 
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -128,9 +127,13 @@ public class Utils {
     }
     
     public static void sleep(long timeInMillis) {
-        try {
-            Thread.sleep(timeInMillis);
-        } catch (InterruptedException ex) { }
+        long initialTime = System.currentTimeMillis();
+        try { Thread.sleep(500); } catch (InterruptedException ex) { }
+        while (System.currentTimeMillis() - initialTime < timeInMillis) {
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException ex) { return; }
+        }
     }
     
     public static int compareVersions(String versionA, String versionB) {
@@ -147,4 +150,7 @@ public class Utils {
         return partsOfA.length - partsOfB.length;
     }
 
+    public interface Callback<P,R> {
+        public R call(P parameter);
+    }
 }

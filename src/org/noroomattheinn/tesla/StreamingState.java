@@ -9,7 +9,6 @@ package org.noroomattheinn.tesla;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -19,9 +18,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
+import org.noroomattheinn.utils.RestyWrapper;
 import us.monoid.json.JSONException;
 import us.monoid.json.JSONObject;
-import us.monoid.web.Resty;
 import us.monoid.web.TextResource;
 
 /**
@@ -232,9 +231,7 @@ public class StreamingState extends APICall {
                 String endpoint = String.format(
                         endpointFormat, withToken.getStreamingVID(), allKeys);
 
-                honorRateLimit();
                 TextResource r = getAuthAPI(withToken).text(endpoint);
-                requestCount++;
                 reader = new BufferedReader(new InputStreamReader(r.stream()));
             } catch (IOException ex) {
                 // Timed out or other problem
@@ -243,7 +240,7 @@ public class StreamingState extends APICall {
             return reader;
         }
 
-        private void setAuthHeader(Resty api, String username, String authToken) {
+        private void setAuthHeader(RestyWrapper api, String username, String authToken) {
             byte[] authString = (username + ":" + authToken).getBytes();
             String encodedString = Base64.encodeBase64String(authString);
             api.withHeader("Authorization", "Basic " + encodedString);
@@ -274,7 +271,7 @@ public class StreamingState extends APICall {
             return null;
         }
 
-        private Resty getAuthAPI(Vehicle v) {
+        private RestyWrapper getAuthAPI(Vehicle v) {
             String authToken = v.getStreamingToken();
 
             // This call requires BASIC authentication using the user name (this is
@@ -284,16 +281,11 @@ public class StreamingState extends APICall {
             // Authorization header feld to be present.
             // To accomplish that, create a new (temporary) Resty instance and
             // add the auth header to it.
-            Resty api = new Resty(new ReadTimeoutOption());
+            RestyWrapper api = new RestyWrapper(ReadTimeoutInMillis);
             setAuthHeader(api, v.getContext().getUsername(), authToken);
             return api;
         }
 
-        private class ReadTimeoutOption extends Resty.Option {
-            public void apply(URLConnection aConnection) {
-                aConnection.setReadTimeout(ReadTimeoutInMillis);
-            }
-        }
 
     }
 

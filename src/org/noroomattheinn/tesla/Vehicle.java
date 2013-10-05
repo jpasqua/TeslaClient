@@ -8,11 +8,11 @@ package org.noroomattheinn.tesla;
 
 import java.io.IOException;
 import java.util.logging.Level;
+import org.noroomattheinn.utils.RestyWrapper;
 import us.monoid.json.JSONArray;
 import us.monoid.json.JSONException;
 import us.monoid.json.JSONObject;
 import us.monoid.web.JSONResource;
-import us.monoid.web.Resty;
 
 /**
  * Vehicle: This object represents a single Tesla Vehicle. All access to
@@ -30,7 +30,7 @@ import us.monoid.web.Resty;
 public class Vehicle {
     // Instance variables for the context in which this object was created
     private Tesla   tesla;
-    private Resty   api;
+    private RestyWrapper   api;
 
     // Instance variables that describe a Vehicle
     private String      UNKNOWN_color;
@@ -42,8 +42,6 @@ public class Vehicle {
     private String      streamingTokens[];
     private String      status;
     private Options     options;
-    private GUIState    cachedGUIState;
-    private VehicleState    cachedVehicleState;
     
     //
     // Constructors
@@ -74,13 +72,6 @@ public class Vehicle {
                 
         // Handle the Options
         options = new Options(description.optString("option_codes"));
-        
-        // Some options don't tend to change much, so get a copy here for reference
-        cachedGUIState = new GUIState(this);
-        while (cachedGUIState.refresh() == false)  {}
-        
-        cachedVehicleState = new VehicleState(this);
-        while (cachedVehicleState.refresh() == false)  {}
     }
     
     
@@ -94,8 +85,6 @@ public class Vehicle {
     public String   status() { return status; }
     public Options  getOptions() { return options; }
     public String   getStreamingToken() { return streamingTokens[0]; }
-    public GUIState cachedGUIState() { return cachedGUIState; }
-    public VehicleState cachedVehicleState() { return cachedVehicleState; }
     public boolean  mobileEnabled() {
         try {
             JSONResource resource = api.json(Tesla.endpoint(vehicleID, "mobile_enabled"));
@@ -110,7 +99,7 @@ public class Vehicle {
     // Methods to get context
     //
     
-    public Resty getAPI() { return api; }
+    public RestyWrapper getAPI() { return api; }
     public Tesla getContext() { return tesla; }
     
     

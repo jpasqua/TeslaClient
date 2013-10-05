@@ -6,6 +6,7 @@
 
 package org.noroomattheinn.tesla;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.HttpCookie;
 import java.net.URI;
@@ -15,10 +16,10 @@ import java.util.logging.FileHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.noroomattheinn.utils.CookieUtils;
+import org.noroomattheinn.utils.RestyWrapper;
 import us.monoid.json.JSONArray;
 import us.monoid.json.JSONException;
 import us.monoid.web.FormContent;
-import us.monoid.web.Resty;
 import us.monoid.web.TextResource;
 
 /**
@@ -63,7 +64,7 @@ public class Tesla {
     }
     
     // Instance Variables
-    private Resty api;
+    private RestyWrapper api;
     private List<Vehicle> vehicles;
     private String username = null;
     
@@ -73,7 +74,7 @@ public class Tesla {
     //
     
     public Tesla() {
-        api = new Resty();
+        api = new RestyWrapper();
         vehicles = new ArrayList<>();
     }
 
@@ -124,7 +125,7 @@ public class Tesla {
         return false;
     }
     
-    private boolean login(String username, String password, boolean remember) {
+    private boolean login(String username, String password) {
         try {
             TextResource text;
             
@@ -132,19 +133,16 @@ public class Tesla {
             // Do the first phase of the login. This sets the _s_portal_session
             // cookie. This must be followed by phase 2 of the login
             text = api.text(endpoint("login"));
+            if (!( text.status(200) || text.status(302) ))
+                return false;
             
             // OK, now complete the login  by doing a POST with the username
             // and password. This sets the user_credentials cookie
-            FormContent fc = Resty.form(
-                    "user_session[email]=" + Resty.enc(username) +
-                    "&user_session[password]=" + Resty.enc(password));
+            FormContent fc = RestyWrapper.form(
+                    "user_session[email]=" + RestyWrapper.enc(username) +
+                    "&user_session[password]=" + RestyWrapper.enc(password));
             text = api.text(endpoint("login"), fc);
-
-            // Save the login information for next time...
-            this.username = username;
-            stashUsername();
-            if (remember) CookieUtils.fetchAndWriteCookies(CookiesFile);
-            return true;
+            return (text.status(200) || text.status(302));
         } catch (IOException ex) {
             logger.log(Level.SEVERE, null, ex);
             return false;
@@ -160,7 +158,14 @@ public class Tesla {
      */
     public boolean connect() {
         vehicles.clear();
-        return login() && fetchVehiclesInto(vehicles);
+        if (!login()) return false;
+        if (!fetchVehiclesInto(vehicles)) {
+            // Delete the cookies file if it exists - it's not working
+            File cf = new File(CookiesFile);
+            if (cf.exists()) cf.delete();
+            return false;
+        }
+        return true;
     }
 
     /*
@@ -172,7 +177,14 @@ public class Tesla {
      */
     public boolean connect(String username, String password, boolean remember) {
         vehicles.clear();
-        return login(username, password, remember) && fetchVehiclesInto(vehicles);
+        if (!login(username, password)) return false;
+        if (!fetchVehiclesInto(vehicles)) return false;
+        
+        // OK, we made it! Stash off the results of the successful login
+        this.username = username;
+        stashUsername();
+        if (remember) CookieUtils.fetchAndWriteCookies(CookiesFile);
+        return true;
     }
 
     
@@ -189,7 +201,7 @@ public class Tesla {
                 list.add(vehicle);
             }
         } catch (IOException | JSONException ex) {
-            logger.log(Level.SEVERE, null, ex);
+            logger.log(Level.INFO, null, ex);
             return false;
         }
         return true;
@@ -204,6 +216,6 @@ public class Tesla {
     //
     
     public String getUsername() { return username; }    
-    public Resty getAPI() { return api; }
+    public RestyWrapper getAPI() { return api; }
 
 }

@@ -23,6 +23,10 @@ public class GUIState extends APICall {
         super(v, Tesla.command(v.getVID(), "gui_settings"));
     }
     
+    public boolean refresh() { 
+        return super.refresh(); 
+    }
+    
     //
     // Field Accessor Methods
     //

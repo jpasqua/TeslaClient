@@ -236,6 +236,7 @@ public class Options {
         IPMB("Leather, Black"),
         IPMG("Leather, Gray"),
         IPMT("Leather, Tan"),
+        IZZW("Perf Leather with Grey Piping, White"),
         IZMB("Perf Leather with Piping, Black"),
         IZMG("Perf Leather with Piping, Gray"),
         IZMT("Perf Leather with Piping, Tan"),
