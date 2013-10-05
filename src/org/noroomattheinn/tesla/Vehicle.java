@@ -42,6 +42,7 @@ public class Vehicle {
     private String      streamingTokens[];
     private String      status;
     private Options     options;
+    private String      baseValues;
     
     //
     // Constructors
@@ -50,6 +51,8 @@ public class Vehicle {
     public Vehicle(Tesla tesla, JSONObject description) {
         this.tesla = tesla;
         this.api = tesla.getAPI();
+        this.baseValues = description.toString();
+        
         UNKNOWN_color = "UNKNOWN";
         UNKNOWN_display_name = "UNKNOWN";
         vehicleID = description.optString("id");
@@ -93,7 +96,9 @@ public class Vehicle {
             return false;
         }
     }
-    
+    public String getUnderlyingValues() {
+        return baseValues;
+    }
     
     //
     // Methods to get context
