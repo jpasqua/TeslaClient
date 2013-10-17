@@ -139,7 +139,11 @@ public class Options {
     public boolean hasSatRadio() { return hasOption("X013"); }
     public boolean hasPerfExterior() { return hasOption("X019"); }
     public boolean hasPerfPowertrain() { return hasOption("X024"); }
-
+    // Speculative at this point
+    public boolean hasParkingSensors() { return hasOption("PK"); }
+    public boolean hasLightingPackage() { return hasOption("LP"); }
+    public boolean hasSecurityPackage() { return hasOption("SP"); }
+    public boolean hasColdWeather() { return hasOption("CW"); }
     
     //
     // Override Methods
@@ -184,6 +188,12 @@ public class Options {
                 "        Parcel Shelf: %b\n" +
                 "        Paint Armor: %b\n" +
                 "        Third Row Seating: %b\n" +
+                "    ]\n" +
+                "    Newer Options: [\n" +
+                "        Parking Sensors: %b\n" +
+                "        Lighting Package: %b\n" + 
+                "        Security Package: %b\n" +
+                "        Cold Weather Package: %b\n" +
                 "    ]\n",
                 region(), trimLevel(), driveSide(),
                 isPerformance(), isPerfPlus(),
@@ -194,8 +204,9 @@ public class Options {
                 hasHomeLink(), hasNavSystem(),
                 hasAudioUpgrade(), hasSatRadio(),
                 hasSupercharger(), hasTwinCharger(), hasHPWC(),
-                hasParcelShelf(), hasPaintArmor(), hasThirdRow()
-        );
+                hasParcelShelf(), hasPaintArmor(), hasThirdRow(),
+                hasParkingSensors(), hasLightingPackage(), hasSecurityPackage(),
+                hasColdWeather());
     }
 
     //

@@ -64,8 +64,8 @@ public class Tesla {
     }
     
     // Instance Variables
-    private RestyWrapper api;
-    private List<Vehicle> vehicles;
+    private final RestyWrapper api;
+    private final List<Vehicle> vehicles;
     private String username = null;
     
     
@@ -142,7 +142,16 @@ public class Tesla {
                     "user_session[email]=" + RestyWrapper.enc(username) +
                     "&user_session[password]=" + RestyWrapper.enc(password));
             text = api.text(endpoint("login"), fc);
-            return (text.status(200) || text.status(302));
+            int status = text.http().getResponseCode();
+            if (!text.status(200) && !text.status(302))
+                return false;
+            
+            String responseBody = text.toString();
+            if (responseBody.contains("You do not have access")) {
+                logger.log(Level.INFO, "Login Failure:\n{0}", responseBody);
+                return false;
+            }
+            return true;
         } catch (IOException ex) {
             logger.log(Level.SEVERE, null, ex);
             return false;
@@ -201,7 +210,7 @@ public class Tesla {
                 list.add(vehicle);
             }
         } catch (IOException | JSONException ex) {
-            logger.log(Level.INFO, null, ex);
+            logger.log(Level.INFO, "Problem fetching vehicle list", ex);
             return false;
         }
         return true;

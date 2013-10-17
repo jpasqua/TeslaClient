@@ -136,6 +136,10 @@ public class Utils {
         }
     }
     
+    public static void yieldFor(long timeInMillis) {
+        try { Thread.sleep(timeInMillis); } catch (InterruptedException ex) { }
+    }
+    
     public static int compareVersions(String versionA, String versionB) {
         String[] partsOfA = versionA.split("\\.");
         String[] partsOfB = versionB.split("\\.");
