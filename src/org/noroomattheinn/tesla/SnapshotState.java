@@ -76,7 +76,7 @@ public class SnapshotState extends APICall {
     public int    power() { return(getInteger(Keys.power)); }
     public String shiftState() { return(getString(Keys.shift_state)); }
     public int    range() { return(getInteger(Keys.range)); }
-    public String getStateName() { return "Unstreamed State"; }
+    @Override public String getStateName() { return "Unstreamed State"; }
 
     
     // Constructors
@@ -91,26 +91,28 @@ public class SnapshotState extends APICall {
  * 
  *----------------------------------------------------------------------------*/
     
-    public boolean refresh() {
+    @Override public boolean refresh() {
         reader = null;
-        return refreshStream();
-    }
-    
-    public boolean refreshStream() {
-        // We need to be prepared to try twice just in case the reader went
-        // stale on us since the last refresh()
         for (int i = 0; i < 2; i++) {
             prepare();
-            JSONObject val;
-            if (reader != null && (val = produce(reader)) != null) {
-                setState(val);
+            refreshStream();
+            if (hasValidData())
                 return true;
-            }
             reader = null;
             Utils.sleep(1000);
         }
-        invalidate();
         return false;
+    }
+    
+    public boolean refreshStream () {
+        JSONObject val = produce(reader);
+        if (val == null) {
+            invalidate();
+            return false;
+        }
+
+        setState(val);
+        return true;
     }
     
     
@@ -121,7 +123,7 @@ public class SnapshotState extends APICall {
  *----------------------------------------------------------------------------*/
     
     
-    public String toString() {
+    @Override public String toString() {
         return String.format(
                 "Time Stamp: %s.%s\n" +
                 "Speed: %3.1f\n" +
@@ -144,7 +146,8 @@ public class SnapshotState extends APICall {
  * 
  *----------------------------------------------------------------------------*/
     
-    private JSONObject produce(BufferedReader reader) {        
+    private JSONObject produce(BufferedReader reader) { 
+        if (reader == null) return null;
         try {
             String line = reader.readLine();
             if (line == null) return null;
@@ -190,7 +193,7 @@ public class SnapshotState extends APICall {
             reader = new BufferedReader(new InputStreamReader(r.stream()));
         } catch (IOException ex) {
             // Timed out or other problem
-            Tesla.logger.log(Level.INFO, "Failed getting streaming data. HANDLED.", ex.getMessage());
+            Tesla.logger.log(Level.INFO, "Auth tokens may have expired, will retry", ex.getMessage());
             vehicleWithToken = null;    // Tokens may have expired, force refetch
             reader = null;
         }

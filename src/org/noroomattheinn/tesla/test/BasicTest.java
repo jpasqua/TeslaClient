@@ -13,9 +13,10 @@ import org.noroomattheinn.tesla.VehicleState;
 import org.noroomattheinn.tesla.DrivingState;
 import org.noroomattheinn.tesla.GUIState;
 import org.noroomattheinn.tesla.HVACState;
-import org.noroomattheinn.tesla.StreamingState;
+import org.noroomattheinn.tesla.SnapshotState;
 import org.noroomattheinn.tesla.Tesla;
 import org.noroomattheinn.tesla.Vehicle;
+import org.noroomattheinn.utils.Utils;
 
 /**
  * BasicTest
@@ -48,9 +49,11 @@ public class BasicTest {
         Tesla.logger.log(Level.INFO, "Number of vehicles: {0}", vehicles.size());
         
         for (Vehicle vehicle : vehicles) {
-            StreamingState ss = new StreamingState(vehicle);
-            while (ss.refresh()) {
+            SnapshotState ss = new SnapshotState(vehicle);
+            ss.refresh(); System.out.println(ss);
+            while (ss.refreshStream()) {
                 System.out.println(ss);
+                Utils.sleep(1000);
             }
             System.out.format("%s\n", vehicle);
             System.out.format("Mobile Enabled: %s\n", vehicle.mobileEnabled());

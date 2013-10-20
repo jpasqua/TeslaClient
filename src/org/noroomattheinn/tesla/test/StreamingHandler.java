@@ -42,10 +42,14 @@ public class StreamingHandler extends TeslaHandler  {
     class StreamHandler extends Handler {
         StreamHandler() { super("stream", "Display streaming state", "s"); }
         public boolean execute() {
+            state.refresh();
+            System.out.println(state);
             for (int i = 0; i < 10; i++) {
                 System.out.println("Streaming Status:");
                 if (state.refreshStream()) {
                     System.out.println(state);
+                } else {
+                    System.out.println("    [No change in state]");
                 }
                 Utils.sleep(500);
             }

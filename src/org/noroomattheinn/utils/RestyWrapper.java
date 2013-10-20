@@ -9,7 +9,10 @@ package org.noroomattheinn.utils;
 import java.io.IOException;
 import java.net.URLConnection;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import us.monoid.web.AbstractContent;
@@ -39,7 +42,7 @@ public class RestyWrapper {
  * 
  *----------------------------------------------------------------------------*/
 
-    private static CircularBuffer<Pair<Long,String>> timestamps = new CircularBuffer<>(1000);
+    private static CircularBuffer<Pair<Long,String>> timestamps = new CircularBuffer<>(100);
 
     private Resty resty;
     private List<Pair<Integer,Integer>> rateLimits;
@@ -96,7 +99,7 @@ public class RestyWrapper {
         return resty.text(anUri);
     }
 
-	public TextResource text(String anUri, AbstractContent content) throws IOException {
+    public TextResource text(String anUri, AbstractContent content) throws IOException {
         startRequest(anUri);
         return resty.text(anUri, content);
     }
@@ -108,11 +111,11 @@ public class RestyWrapper {
 
 /*------------------------------------------------------------------------------
  *
- * Static Utility Functions
+ *  Utility Functions
  * 
  *----------------------------------------------------------------------------*/
 
-	public static FormContent form(String query) {
+    public static FormContent form(String query) {
         return Resty.form(query);
     }
     
@@ -124,7 +127,26 @@ public class RestyWrapper {
         resty.withHeader(aHeader, aValue);
     }
 
-    
+    public static Map<Integer,Integer> stats() {
+        int[] counts = new int[3];
+        
+        Arrays.fill(counts, 0);
+        long now = System.currentTimeMillis();
+        for (int i = timestamps.size()-1; i >= 0; i--) {
+            Pair<Long,String> entry = timestamps.peekAt(i);
+            long age = now - entry.item1;
+            if (age < 10 * 1000) counts[0]++;
+            if (age < 60 * 1000) counts[1]++;
+            if (age < 60 * 60 * 1000) counts[2]++;
+        }
+
+        Map<Integer,Integer> stats = new TreeMap<>();
+        stats.put(10, counts[0]);
+        stats.put(60, counts[1]);
+        stats.put(60*60, counts[2]);
+
+        return stats;
+    }
 /*------------------------------------------------------------------------------
  *
  * PRIVATE - Utility Classes and Methods
