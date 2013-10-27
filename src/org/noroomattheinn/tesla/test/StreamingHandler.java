@@ -41,12 +41,12 @@ public class StreamingHandler extends TeslaHandler  {
 
     class StreamHandler extends Handler {
         StreamHandler() { super("stream", "Display streaming state", "s"); }
-        public boolean execute() {
+        @Override public boolean execute() {
             state.refresh();
             System.out.println(state);
             for (int i = 0; i < 10; i++) {
                 System.out.println("Streaming Status:");
-                if (state.refreshStream()) {
+                if (state.refreshFromStream()) {
                     System.out.println(state);
                 } else {
                     System.out.println("    [No change in state]");
@@ -59,7 +59,7 @@ public class StreamingHandler extends TeslaHandler  {
     
     class DisplayHandler extends Handler {
         DisplayHandler() { super("display", "Display snapshot state", "d"); }
-        public boolean execute() {
+        @Override public boolean execute() {
             if (state.refresh()) {
                 System.out.println(state);
             }

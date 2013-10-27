@@ -46,7 +46,8 @@ public class SnapshotState extends APICall {
             "https://streaming.vn.teslamotors.com/stream/%s/?values=%s";
 
     private static final int WakeupRetries = 3;
-    private static final int ReadTimeoutInMillis = 1 * 1000;
+    private static final int ReadTimeoutInMillis = 5 * 1000;
+    private static final int StalenessThreshold = 5 * 1000;
     
 /*------------------------------------------------------------------------------
  *
@@ -54,8 +55,8 @@ public class SnapshotState extends APICall {
  * 
  *----------------------------------------------------------------------------*/
     
-    private Vehicle vehicleWithToken = null;
-    private BufferedReader reader = null;
+    private Vehicle authenticatedVehicle = null;
+    private BufferedReader locationReader = null;
     
     
 /*==============================================================================
@@ -91,28 +92,24 @@ public class SnapshotState extends APICall {
  * 
  *----------------------------------------------------------------------------*/
     
-    @Override public boolean refresh() {
-        reader = null;
-        for (int i = 0; i < 2; i++) {
-            prepare();
-            refreshStream();
-            if (hasValidData())
-                return true;
-            reader = null;
-            Utils.sleep(1000);
-        }
+    public boolean opportunisticRefresh() {
+        // Just try reading. Maybe we're lucky enough to still be connected
+        if (getFromStream()) return true;
+
+        // Well, that didn't work! Get a new reader and try again
+        locationReader = refreshReader();
+        if (getFromStream()) return true;
+        
         return false;
     }
     
-    public boolean refreshStream () {
-        JSONObject val = produce(reader);
-        if (val == null) {
-            invalidate();
-            return false;
-        }
-
-        setState(val);
-        return true;
+    public boolean refreshFromStream() {
+        return getFromStream();
+    }
+    
+    @Override public boolean refresh() {
+        locationReader = refreshReader();
+        return getFromStream();
     }
     
     
@@ -145,12 +142,39 @@ public class SnapshotState extends APICall {
  * Methods for setting up the Streaming connection and reading the data
  * 
  *----------------------------------------------------------------------------*/
+
+    private boolean getFromStream () {
+        JSONObject val = produce();
+        if (val == null) {
+            invalidate();
+            return false;
+        }
+
+        setState(val);
+        return true;
+    }
     
-    private JSONObject produce(BufferedReader reader) { 
-        if (reader == null) return null;
+    private BufferedReader refreshReader() {
+        // Just try making a connection, maybe we're lucky enough to still be authenticated
+        BufferedReader r = establishStreamingConnection();
+        if (r != null) return r;
+        
+        // Well, that didn't work! Re-authenticate and try again
+        refreshAuthentication();
+        return establishStreamingConnection();
+    }
+    
+    private JSONObject produce() {
+        if (locationReader == null) {
+            return null;
+        }
+        
         try {
-            String line = reader.readLine();
-            if (line == null) return null;
+            String line = locationReader.readLine();
+            if (line == null) {
+                locationReader = null;
+                return null;
+            }
 
             JSONObject jo = new JSONObject();
             String vals[] = line.split(",");
@@ -169,35 +193,22 @@ public class SnapshotState extends APICall {
         }
     }
 
-    private void prepare() {
-        prepareInternal();
-        if (reader != null) return;
-        Utils.sleep(1000);
-        prepareInternal();  // Try again. Auth tokens may have expired.
-    }
-
+    
+    private BufferedReader establishStreamingConnection() {
+        if (authenticatedVehicle == null) return null;
         
-    private void prepareInternal() {
-        if (reader != null) return;
-            
-        if (vehicleWithToken == null) {
-            vehicleWithToken = getVehicleWithAuthToken(v);
-            if (vehicleWithToken == null)  return;
-        }
-
         String endpoint = String.format(
-                endpointFormat, vehicleWithToken.getStreamingVID(), allKeys);
+                endpointFormat, authenticatedVehicle.getStreamingVID(), allKeys);
 
         try {
-            TextResource r = getAuthAPI(vehicleWithToken).text(endpoint);
-            reader = new BufferedReader(new InputStreamReader(r.stream()));
+            TextResource r = getAuthAPI(authenticatedVehicle).text(endpoint);
+            return new BufferedReader(new InputStreamReader(r.stream()));
         } catch (IOException ex) {
-            // Timed out or other problem
-            Tesla.logger.log(Level.INFO, "Auth tokens may have expired, will retry", ex.getMessage());
-            vehicleWithToken = null;    // Tokens may have expired, force refetch
-            reader = null;
+            Tesla.logger.log(Level.INFO, "Auth tokens may have expired", ex.getMessage());
+            return null;
         }
     }
+    
     
 /*------------------------------------------------------------------------------
  *
@@ -213,28 +224,28 @@ public class SnapshotState extends APICall {
     }
 
 
-    private Vehicle getVehicleWithAuthToken(Vehicle basedOn) {
-        String vid = basedOn.getVID();
+    private void refreshAuthentication() {
+        String vid = v.getVID();
         // Remember this so we can find the right vehicle when we fetch
         // the updated list of vehicles after doing the wakeup
 
-        ActionController a = new ActionController(basedOn);
+        ActionController a = new ActionController(v);
         for (int i = 0; i < WakeupRetries; i++) {
 
             List<Vehicle> vList = new ArrayList<>();
-            basedOn.getContext().fetchVehiclesInto(vList);
+            v.getContext().fetchVehiclesInto(vList);
             for (Vehicle newV : vList) {
                 if (newV.getVID().equals(vid) && newV.getStreamingToken() != null) {
-                    return newV;
+                    authenticatedVehicle = newV;
+                    return;
                 }
             }
             a.wakeUp(); Utils.sleep(500);
         }
 
-        // For some reason we can't get Streaming tokens. We've tried enough
-        // so give up 
+        // For some reason we can't get Streaming tokens. We've tried enough - Give up
         Tesla.logger.log(Level.WARNING, "Error: couldn't retreive auth tokens");
-        return null;
+        authenticatedVehicle = null;
     }
 
     private RestyWrapper getAuthAPI(Vehicle v) {

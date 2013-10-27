@@ -51,9 +51,9 @@ public class BasicTest {
         for (Vehicle vehicle : vehicles) {
             SnapshotState ss = new SnapshotState(vehicle);
             ss.refresh(); System.out.println(ss);
-            while (ss.refreshStream()) {
+            while (ss.refreshFromStream()) {
                 System.out.println(ss);
-                Utils.sleep(1000);
+                Utils.sleep(500);
             }
             System.out.format("%s\n", vehicle);
             System.out.format("Mobile Enabled: %s\n", vehicle.mobileEnabled());
