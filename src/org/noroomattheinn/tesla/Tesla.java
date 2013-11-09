@@ -67,7 +67,7 @@ public class Tesla {
     private final RestyWrapper api;
     private final List<Vehicle> vehicles;
     private String username = null;
-    
+    private File cookieDir = null;
     
     //
     // Constructors
@@ -118,7 +118,7 @@ public class Tesla {
     // 
     
     private boolean login() {
-        if (CookieUtils.readAndStoreCookies(CookiesFile)) {
+        if (CookieUtils.readAndStoreCookies(cookieFileName())) {
             grabUsername();
             return true;
         }
@@ -169,9 +169,7 @@ public class Tesla {
         vehicles.clear();
         if (!login()) return false;
         if (!fetchVehiclesInto(vehicles)) {
-            // Delete the cookies file if it exists - it's not working
-            File cf = new File(CookiesFile);
-            if (cf.exists()) cf.delete();
+            clearCookies(); // Clear the cookies - they're not working
             return false;
         }
         return true;
@@ -192,10 +190,17 @@ public class Tesla {
         // OK, we made it! Stash off the results of the successful login
         this.username = username;
         stashUsername();
-        if (remember) CookieUtils.fetchAndWriteCookies(CookiesFile);
+        if (remember) CookieUtils.fetchAndWriteCookies(cookieFileName());
         return true;
     }
 
+    /**
+     * Get rid of stored cookies.
+     */
+    public void clearCookies() {
+        File cf = new File(cookieFileName());
+        if (cf.exists()) cf.delete();
+    }
     
     //
     // Vehicle handling Methods
@@ -218,7 +223,7 @@ public class Tesla {
 
     public List<Vehicle> getVehicles() { return vehicles; }
 
-    
+    public void setCookieDir(File cookieDir) { this.cookieDir = cookieDir; }
     
     //
     // Field Accessor Methods
@@ -227,4 +232,12 @@ public class Tesla {
     public String getUsername() { return username; }    
     public RestyWrapper getAPI() { return api; }
 
+    private String cookieFileName() {
+        if (cookieDir == null) return CookiesFile;
+        try {
+            return cookieDir.getCanonicalPath() + File.separatorChar + CookiesFile;
+        } catch (IOException ex) {
+            return CookiesFile;
+        }
+    }
 }
