@@ -108,7 +108,12 @@ public class RestyWrapper {
         startRequest(anUri);
         return resty.json(anUri);
     }
-
+    
+    public JSONResource json(String anUri, AbstractContent content) throws IOException {
+        startRequest(anUri);
+        return resty.json(anUri, content);
+    }
+    
 /*------------------------------------------------------------------------------
  *
  *  Utility Functions

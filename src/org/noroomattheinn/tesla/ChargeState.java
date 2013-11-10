@@ -34,7 +34,7 @@ public class ChargeState extends APICall {
     // Field Accessor Methods
     //
     
-    public String getStateName() { return "Charge State"; }
+    @Override public String getStateName() { return "Charge State"; }
 
     public boolean  chargeToMaxRange()  { return getBoolean("charge_to_max_range"); }
     public int      maxRangeCharges()   { return getInteger("max_range_charge_counter"); }
