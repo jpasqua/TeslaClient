@@ -44,10 +44,12 @@ public class Versions {
         @XmlElement private String number;
         @XmlElement private Date date;
         @XmlElement private URL url;
+        @XmlElement private Boolean experimental = false;
         
         public String getReleaseNumber() { return number; }
         public Date getReleaseDate() { return date; }
         public URL getReleaseURL() { return url; }
+        public Boolean getExperimental() { return experimental; }
     }
     
     public List<Release> getReleases() { return releases; }
@@ -73,10 +75,16 @@ public class Versions {
         Versions versions = Versions.getVersionInfo(
                 "https://dl.dropboxusercontent.com/u/7045813/VisibleTesla/versions.xml");
         
+        
         if (versions == null) {
             Logger.getLogger(Versions.class.getName()).log(
                     Level.INFO, "Unable to get version information");
         } else {
+            for (Release r : versions.getReleases()) {
+                System.out.println("Version: " + r.getReleaseNumber());
+                System.out.println("IsExperimental: " + r.getExperimental());
+            }
+
             JAXBContext jc = JAXBContext.newInstance(Versions.class);
             JAXBElement<Versions> je2 = new JAXBElement<>(new QName("versions"), Versions.class, versions);
             Marshaller marshaller = jc.createMarshaller();

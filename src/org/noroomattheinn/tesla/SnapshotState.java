@@ -37,7 +37,7 @@ public class SnapshotState extends APICall {
  *----------------------------------------------------------------------------*/
     private enum Keys {
         timestamp, odometer, speed, soc, elevation, est_heading,
-        est_lat, est_lng, power, shift_state, range};
+        est_lat, est_lng, power, shift_state, range, est_range, heading};
     private final Keys[] keyList = Keys.values();
     private final String allKeys =
             StringUtils.join(keyList, ',', 1, keyList.length);
@@ -47,7 +47,6 @@ public class SnapshotState extends APICall {
 
     private static final int WakeupRetries = 3;
     private static final int ReadTimeoutInMillis = 5 * 1000;
-    private static final int StalenessThreshold = 5 * 1000;
     
 /*------------------------------------------------------------------------------
  *
@@ -72,11 +71,14 @@ public class SnapshotState extends APICall {
     public int    soc() { return(getInteger(Keys.soc)); }
     public int    elevation() { return(getInteger(Keys.elevation)); }
     public int    estHeading() { return(getInteger(Keys.est_heading));}
+    public int    heading() { return(getInteger(Keys.heading));}
     public double estLat() { return(getDouble(Keys.est_lat)); }
     public double estLng() { return(getDouble(Keys.est_lng)); }
     public int    power() { return(getInteger(Keys.power)); }
     public String shiftState() { return(getString(Keys.shift_state)); }
     public int    range() { return(getInteger(Keys.range)); }
+    public int    estRange() { return(getInteger(Keys.est_range)); }
+    
     @Override public String getStateName() { return "Unstreamed State"; }
 
     
