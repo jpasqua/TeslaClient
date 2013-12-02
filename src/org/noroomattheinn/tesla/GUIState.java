@@ -15,6 +15,8 @@ package org.noroomattheinn.tesla;
 
 public class GUIState extends APICall {
     
+    public State state;
+    
     //
     // Constructors
     //
@@ -23,20 +25,25 @@ public class GUIState extends APICall {
         super(v, Tesla.command(v.getVID(), "gui_settings"));
     }
     
-    public boolean refresh() { 
-        return super.refresh(); 
+    @Override protected BaseState setState(boolean valid) {
+        return (state = valid ? new State(this) : null);
     }
     
-    //
-    // Field Accessor Methods
-    //
-
-    public String getStateName() { return "GUI State"; }
+    @Override public String getStateName() { return "GUI State"; }
     
-    public String distanceUnits()    { return getString("gui_distance_units"); }
-    public String temperatureUnits() { return getString("gui_temperature_units"); }
-    public String chargeRateUnits()  { return getString("gui_charge_rate_units"); }
-    public boolean use24HrTime()     { return getBoolean("gui_24_hour_time"); }
-    public String rangeDisplay()     { return getString("gui_range_display"); }
-
+    public static class State extends BaseState {
+        public String distanceUnits;
+        public String temperatureUnits;
+        public String chargeRateUnits;
+        public boolean use24HrTime;
+        public String rangeDisplay;
+        
+        public State(GUIState gs) {
+            distanceUnits = gs.getString("gui_distance_units"); 
+            temperatureUnits = gs.getString("gui_temperature_units"); 
+            chargeRateUnits = gs.getString("gui_charge_rate_units"); 
+            use24HrTime = gs.getBoolean("gui_24_hour_time"); 
+            rangeDisplay = gs.getString("gui_range_display"); 
+        }
+    }
 }

@@ -12,7 +12,6 @@ import java.net.HttpCookie;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.FileHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.noroomattheinn.utils.CookieUtils;
@@ -49,19 +48,9 @@ public class Tesla {
     private static final URI LocalURI = URI.create("local");
     private static final String UsernameKey = "username";
     private static final String CookiesFile = "cookies.txt";
-    private static final String LogFileName = "tesla.log";
     
     // Class Variables
     public static final Logger logger = Logger.getLogger(Tesla.class.getName());
-    static {
-        FileHandler fileHandler;
-        try {
-            fileHandler = new FileHandler(LogFileName);
-            logger.addHandler(fileHandler);
-        } catch (IOException | SecurityException ex) {
-            logger.log(Level.SEVERE, "Unable to establish log file");
-        }
-    }
     
     // Instance Variables
     private final RestyWrapper api;

@@ -16,6 +16,8 @@ import org.noroomattheinn.utils.Utils;
 
 public class HVACState extends APICall {
 
+    public State state;
+    
     //
     // Constructor
     //
@@ -24,27 +26,18 @@ public class HVACState extends APICall {
         super(v, Tesla.command(v.getVID(), "climate_state"));
     }
     
-    //
-    // Field Accessor Methods
-    //
-    
-    public String getStateName() { return "HVAC State"; }
+    @Override protected BaseState setState(boolean valid) {
+        return (state = valid ? new State(this) : null);
+    }
 
-    public double  insideTemp() { return getDouble("inside_temp"); }
-    public double  outsideTemp() { return getDouble("outside_temp"); }
-    public double  driverTemp() { return getDouble("driver_temp_setting"); }
-    public double  passengerTemp() { return getDouble("passenger_temp_setting"); }
-    public boolean autoConditioning() { return getBoolean("is_auto_conditioning_on"); }
-    public int     isFrontDefrosterOn() { return getInteger("is_front_defroster_on"); }
-    public boolean isRearDefrosterOn() { return getBoolean("is_rear_defroster_on"); }
-    public int     fanStatus() { return getInteger("fan_status"); }
+    @Override public String getStateName() { return "HVAC State"; }
 
     
     //
     // Override methods
     //
     
-    public String toString() {
+    @Override public String toString() {
         return String.format(
             "    Inside Temp: %3.0f\n" +
             "    Outside Temp: %3.0f\n" +
@@ -54,14 +47,36 @@ public class HVACState extends APICall {
             "    Front Defroster On: %d\n" +
             "    Rear Defroster On: %s\n" +
             "    Fan Setting: %d\n", 
-            Utils.cToF(insideTemp()),
-            Utils.cToF(outsideTemp()),
-            Utils.cToF(driverTemp()),
-            Utils.cToF(passengerTemp()),
-            Utils.yesNo(autoConditioning()),
-            isFrontDefrosterOn(),
-            Utils.yesNo(isRearDefrosterOn()),
-            fanStatus()
+            Utils.cToF(state.insideTemp),
+            Utils.cToF(state.outsideTemp),
+            Utils.cToF(state.driverTemp),
+            Utils.cToF(state.passengerTemp),
+            Utils.yesNo(state.autoConditioning),
+            state.isFrontDefrosterOn,
+            Utils.yesNo(state.isRearDefrosterOn),
+            state.fanStatus
             );
+    }
+    
+    public static class State extends BaseState {
+        public double  insideTemp;
+        public double  outsideTemp;
+        public double  driverTemp;
+        public double  passengerTemp;
+        public boolean autoConditioning;
+        public int     isFrontDefrosterOn;
+        public boolean isRearDefrosterOn;
+        public int     fanStatus;
+    
+        public State(HVACState hvs) {
+            insideTemp = hvs.getDouble("inside_temp"); 
+            outsideTemp = hvs.getDouble("outside_temp"); 
+            driverTemp = hvs.getDouble("driver_temp_setting"); 
+            passengerTemp = hvs.getDouble("passenger_temp_setting"); 
+            autoConditioning = hvs.getBoolean("is_auto_conditioning_on"); 
+            isFrontDefrosterOn = hvs.getInteger("is_front_defroster_on"); 
+            isRearDefrosterOn = hvs.getBoolean("is_rear_defroster_on"); 
+            fanStatus = hvs.getInteger("fan_status"); 
+        }
     }
 }

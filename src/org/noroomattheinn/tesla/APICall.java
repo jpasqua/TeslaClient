@@ -29,12 +29,10 @@ import us.monoid.json.JSONObject;
 public abstract class APICall {
     
     // Instance Variables
-    private RestyWrapper api;
-    private String      vid;
-    private JSONObject  theState;
-    private String      endpoint;
-    private boolean     hasValidData;
-    protected Vehicle   v;
+    private RestyWrapper    api;
+    private JSONObject      jsonState;
+    private String          endpoint;
+    protected Vehicle       v;
     
     //
     // Constructors
@@ -48,12 +46,11 @@ public abstract class APICall {
     public APICall(Vehicle v) {
         this.v = v;
         this.api = v.getAPI();
-        this.vid = v.getVID();
         this.endpoint = null;
-        this.theState = new JSONObject();
-        this.hasValidData = false;  // Has never been refreshed (successfully)
+        this.jsonState = new JSONObject();
     }
     
+    protected BaseState setState(boolean valid) { return null; }
     
     //
     // Updating the endpoint and refreshing the state
@@ -67,55 +64,53 @@ public abstract class APICall {
     public boolean refresh() {
         try {
             if (endpoint != null) {
-                setState(api.json(endpoint).object());
+                setJSONState(api.json(endpoint).object());
+                setState(true);
             }
             return true;
         } catch (IOException | JSONException ex) {
             Tesla.logger.log(Level.FINEST, "Failed refreshing. HANDLED.", ex);
-            theState = new JSONObject();
-            hasValidData = false;
+            jsonState = new JSONObject();
+            setState(false);
             return false;
         }
     }
     
-    protected void invalidate() { hasValidData = false; }
     
-    protected void setState(JSONObject newState) {
-        this.theState = newState;
-        hasValidData = true;
+    protected void setJSONState(JSONObject newState) {
+        this.jsonState = newState;
     }
 
     private void setEndpoint(String newEndpoint) { this.endpoint = newEndpoint; }
 
     public String getStateName() { return "State"; }
-    public final boolean hasValidData() { return hasValidData; }
     public Vehicle getVehicle() { return v; }
     //
     // Field Accessor Methods
     //
     
-    public String   getString(String key)  { return theState.optString(key);  }
-    public boolean  getBoolean(String key) { return theState.optBoolean(key); }
-    public double   getDouble(String key)  { return theState.optDouble(key);  }
-    public int      getInteger(String key) { return theState.optInt(key);     }
-    public long     getLong(String key)    { return theState.optLong(key);    }
+    public String   getString(String key)  { return jsonState.optString(key);  }
+    public boolean  getBoolean(String key) { return jsonState.optBoolean(key); }
+    public double   getDouble(String key)  { return jsonState.optDouble(key);  }
+    public int      getInteger(String key) { return jsonState.optInt(key);     }
+    public long     getLong(String key)    { return jsonState.optLong(key);    }
     
-    public String   getString(Enum<?> key) { return theState.optString(key.name()); }
-    public boolean  getBoolean(Enum<?> key) { return theState.optBoolean(key.name());}
-    public double   getDouble(Enum<?> key)  { return theState.optDouble(key.name()); }
-    public int      getInteger(Enum<?> key) { return theState.optInt(key.name()); }
-    public long     getLong(Enum<?> key)    { return theState.optLong(key.name());}
+    public String   getString(Enum<?> key) { return jsonState.optString(key.name()); }
+    public boolean  getBoolean(Enum<?> key) { return jsonState.optBoolean(key.name());}
+    public double   getDouble(Enum<?> key)  { return jsonState.optDouble(key.name()); }
+    public int      getInteger(Enum<?> key) { return jsonState.optInt(key.name()); }
+    public long     getLong(Enum<?> key)    { return jsonState.optLong(key.name());}
 
     
     //
     // Overrides
     //
     
-    public String toString() { 
+    @Override public String toString() { 
         try {
-            return theState.toString(4);
+            return jsonState.toString(4);
         } catch (JSONException ex) {
-            return theState.toString();
+            return jsonState.toString();
         }
     }
     

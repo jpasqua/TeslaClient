@@ -15,6 +15,8 @@ package org.noroomattheinn.tesla;
 
 public class DrivingState extends APICall {
     
+    public State state;
+    
     //
     // Constructors
     //
@@ -23,20 +25,28 @@ public class DrivingState extends APICall {
         super(v, Tesla.command(v.getVID(), "drive_state"));
     }
     
-
-    //
-    // Field Accessor Methods
-    //
+    @Override protected BaseState setState(boolean valid) {
+        return (state = valid ? new State(this) : null);
+    }
     
-    public String getStateName() { return "Driving State"; }
+    public static class State extends BaseState {
+        public double   latitude;
+        public double   longitude;
+        public int      heading;
+        public int      gpsAsOf;
     
-    public double latitude()  { return getDouble("latitude"); }
-    public double longitude() { return getDouble("longitude"); }
-    public int    heading()   { return getInteger("heading"); }
-    public int    gpsAsOf()   { return getInteger("gps_as_of"); }
-    
-    // The following calls aren't well defined in terms of what type and values 
-    // they return. We're leaving them as String for now
-    public String shiftState() { return getString("shift_state"); }
-    public String speed()      { return getString("speed"); }
+        // The following calls aren't well defined in terms of what type and values 
+        // they return. We're leaving them as String for now
+        public String   shiftState;
+        public String   speed;
+        
+        public State(DrivingState ds) {
+            latitude = ds.getDouble("latitude"); 
+            longitude = ds.getDouble("longitude"); 
+            heading = ds.getInteger("heading"); 
+            gpsAsOf = ds.getInteger("gps_as_of"); 
+            shiftState = ds.getString("shift_state"); 
+            speed = ds.getString("speed"); 
+        }
+    }
 }

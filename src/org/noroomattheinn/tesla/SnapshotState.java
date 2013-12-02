@@ -10,7 +10,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
 import org.apache.commons.codec.binary.Base64;
@@ -29,6 +28,8 @@ import us.monoid.web.TextResource;
  */
 
 public class SnapshotState extends APICall {
+    
+    public State state;
     
 /*------------------------------------------------------------------------------
  *
@@ -65,22 +66,12 @@ public class SnapshotState extends APICall {
  *============================================================================*/
     
     // Accessors
-    public Date   timestamp() {return(new Date(getLong(Keys.timestamp))); }
-    public double speed() { return(getDouble(Keys.speed)); }
-    public double odometer() {return(getDouble(Keys.odometer)); }
-    public int    soc() { return(getInteger(Keys.soc)); }
-    public int    elevation() { return(getInteger(Keys.elevation)); }
-    public int    estHeading() { return(getInteger(Keys.est_heading));}
-    public int    heading() { return(getInteger(Keys.heading));}
-    public double estLat() { return(getDouble(Keys.est_lat)); }
-    public double estLng() { return(getDouble(Keys.est_lng)); }
-    public int    power() { return(getInteger(Keys.power)); }
-    public String shiftState() { return(getString(Keys.shift_state)); }
-    public int    range() { return(getInteger(Keys.range)); }
-    public int    estRange() { return(getInteger(Keys.est_range)); }
     
     @Override public String getStateName() { return "Unstreamed State"; }
-
+    
+    @Override protected BaseState setState(boolean valid) {
+        return (state = valid ? new State(this) : null);
+    }
     
     // Constructors
     public SnapshotState(Vehicle v) {
@@ -123,6 +114,7 @@ public class SnapshotState extends APICall {
     
     
     @Override public String toString() {
+        if (state == null) return "[ ]";
         return String.format(
                 "Time Stamp: %s.%s\n" +
                 "Speed: %3.1f\n" +
@@ -130,11 +122,11 @@ public class SnapshotState extends APICall {
                 "Charge Info: [SoC: %d, Power: %d]\n" +
                 "Odometer: %7.1f\n" +
                 "Range: %d\n",
-                timestamp().getTime()/1000, timestamp().getTime()%1000,
-                speed(),
-                estLat(), estLng(), estHeading(), elevation(),
-                soc(), power(),
-                odometer(), range()
+                state.vehicleTimestamp/1000, state.vehicleTimestamp%1000,
+                state.speed,
+                state.estLat, state.estLng, state.estHeading, state.elevation,
+                state.soc, state.power,
+                state.odometer, state.range
                 // Don't know what shift_state is! Always seems to be null
                 );
     }
@@ -148,11 +140,12 @@ public class SnapshotState extends APICall {
     private boolean getFromStream () {
         JSONObject val = produce();
         if (val == null) {
-            invalidate();
+            state = null;
             return false;
         }
-
-        setState(val);
+        setJSONState(val);
+        state = new State(this);
+        state.timestamp = System.currentTimeMillis();
         return true;
     }
     
@@ -264,5 +257,43 @@ public class SnapshotState extends APICall {
         setAuthHeader(api, v.getContext().getUsername(), authToken);
         return api;
     }
-
+    
+/*------------------------------------------------------------------------------
+ *
+ * The State object
+ * 
+ *----------------------------------------------------------------------------*/
+    
+    public static class State extends BaseState {
+        public long   vehicleTimestamp;
+        public double speed;
+        public double odometer;
+        public int    soc;
+        public int    elevation;
+        public int    estHeading;
+        public int    heading;
+        public double estLat;
+        public double estLng;
+        public int    power;
+        public String shiftState;
+        public int    range;
+        public int    estRange;
+        
+        public State(SnapshotState ss) {
+            vehicleTimestamp = ss.getLong(Keys.timestamp);
+            speed = ss.getDouble(Keys.speed);
+            if (Double.isNaN(speed)) speed = 0.0;
+            odometer = ss.getDouble(Keys.odometer);
+            soc = ss.getInteger(Keys.soc);
+            elevation = ss.getInteger(Keys.elevation);
+            estHeading = ss.getInteger(Keys.est_heading);
+            heading = ss.getInteger(Keys.heading);
+            estLat = ss.getDouble(Keys.est_lat);
+            estLng = ss.getDouble(Keys.est_lng);
+            power = ss.getInteger(Keys.power);
+            shiftState = ss.getString(Keys.shift_state);
+            range = ss.getInteger(Keys.range);
+            estRange = ss.getInteger(Keys.est_range);
+        }
+    }
 }

@@ -218,6 +218,8 @@ public class Options {
         WT21("Silver 21\""),
         WTSP("Gray 21\""),
         WTSG("Gray Perf+ 21\""),
+        WTAE("Aero 19\""),          // FIX: What is the real code for this?
+        WTCY("Cyclone 19\""),       // FIX: What is the real code for this?
         Unknown("Unknown");
         
         private String descriptiveName;

@@ -12,14 +12,14 @@ import org.noroomattheinn.utils.Utils;
  * ChargeState: Retrieve the charging state of the vehicle.
  * NOTE: A call to refresh MUST be made before accessing the content of the
  * state. Future calls to refresh may be made to get updated versions of the
- * data.
+ * state.
  *
  * @author Joe Pasqua <joe at NoRoomAtTheInn dot org>
  */
 
 public class ChargeState extends APICall {
     
-    
+    public State state;
     
     //
     // Constructors
@@ -29,49 +29,85 @@ public class ChargeState extends APICall {
         super(v, Tesla.command(v.getVID(), "charge_state"));
     }
 
+    @Override protected BaseState setState(boolean valid) {
+        return (state = valid ? new State(this) : null);
+    }
     
     //
     // Field Accessor Methods
     //
     
     @Override public String getStateName() { return "Charge State"; }
-
-    public boolean  chargeToMaxRange()  { return getBoolean("charge_to_max_range"); }
-    public int      maxRangeCharges()   { return getInteger("max_range_charge_counter"); }
-    public double   range()             { return getDouble("battery_range"); }
-    public double   estimatedRange()    { return getDouble("est_battery_range"); }
-    public double   idealRange()        { return getDouble("ideal_battery_range"); }
-    public int      batteryPercent()    { return getInteger("battery_level"); }
-    public double   batteryCurrent()    { return getDouble("battery_current"); }
-    public int      chargerVoltage()    { return getInteger("charger_voltage"); }
-    public double   timeToFullCharge()  { return getDouble("time_to_full_charge"); }
-    public double   chargeRate()        { return getDouble("charge_rate"); }
-    public boolean  chargePortOpen()    { return getBoolean("charge_port_door_open"); }
-    public boolean  scheduledChargePending(){ return getBoolean("scheduled_charging_pending"); }
-    public long     scheduledStart()    { return getLong("scheduled_charging_start_time"); }
-    public int      chargerPilotCurrent()   { return getInteger("charger_pilot_current"); }
-    public int      chargerActualCurrent()  { return getInteger("charger_actual_current"); }
-    public boolean  fastChargerPresent()    { return getBoolean("fast_charger_present"); }
-    public int      chargerPower()      { return getInteger("charger_power"); }
-    public State    chargingState()     {
-        return Utils.stringToEnum(State.class, getString("charging_state")); }
-
-    // The following calls aren't well defined in terms of what type and values 
-    // they return. We're leaving them as String for now
-    public String   chargeStartingRange()      { return getString("charge_starting_range"); }
-    public String   chargeStartingSOC()        { return getString("charge_starting_soc"); }
-    public String   scheduledChargeStartTime() { return getString("scheduled_charging_start_time"); }
-    public String   UserChargeEnableRequest()  { return getString("user_charge_enable_request"); }
-
-    public int      chargeLimitSOC()       { return getInteger("charge_limit_soc"); }
-    public int      chargeLimitSOCMax()       { return getInteger("charge_limit_soc_max"); }
-    public int      chargeLimitSOCMin()       { return getInteger("charge_limit_soc_min"); }
-    public int      chargeLimitSOCStd()       { return getInteger("charge_limit_soc_std"); }
     
     //
     // Nested Classes
     //
     
-    public enum State {Complete, Charging, Disconnected, Unknown};
+    public enum Status {Complete, Charging, Disconnected, Unknown};
 
+    public static class State extends BaseState {
+        public boolean  chargeToMaxRange;
+        public int      maxRangeCharges;
+        public double   range;
+        public double   estimatedRange;
+        public double   idealRange;
+        public int      batteryPercent;
+        public double   batteryCurrent;
+        public int      chargerVoltage;
+        public double   timeToFullCharge;
+        public double   chargeRate;
+        public boolean  chargePortOpen;
+        public boolean  scheduledChargePending;
+        public long     scheduledStart;
+        public int      chargerPilotCurrent;
+        public int      chargerActualCurrent;
+        public boolean  fastChargerPresent;
+        public int      chargerPower;
+        public Status    chargingState;
+
+        // The following calls aren't well defined in terms of what type and values 
+        // they return. We're leaving them as String for now
+        public String   chargeStartingRange;
+        public String   chargeStartingSOC;
+        public String   scheduledChargeStartTime;
+        public String   UserChargeEnableRequest;
+
+        public int      chargeLimitSOC;
+        public int      chargeLimitSOCMax;
+        public int      chargeLimitSOCMin;
+        public int      chargeLimitSOCStd;
+        
+        public State(ChargeState cs) {
+            chargeToMaxRange =  cs.getBoolean("charge_to_max_range"); 
+            maxRangeCharges =  cs.getInteger("max_range_charge_counter"); 
+            range =  cs.getDouble("battery_range"); 
+            estimatedRange =  cs.getDouble("est_battery_range"); 
+            idealRange =  cs.getDouble("ideal_battery_range"); 
+            batteryPercent =  cs.getInteger("battery_level"); 
+            batteryCurrent =  cs.getDouble("battery_current"); 
+            chargerVoltage =  cs.getInteger("charger_voltage"); 
+            timeToFullCharge =  cs.getDouble("time_to_full_charge"); 
+            chargeRate =  cs.getDouble("charge_rate"); 
+            chargePortOpen =  cs.getBoolean("charge_port_door_open"); 
+            scheduledChargePending = cs.getBoolean("scheduled_charging_pending"); 
+            scheduledStart =  cs.getLong("scheduled_charging_start_time"); 
+            chargerPilotCurrent =  cs.getInteger("charger_pilot_current"); 
+            chargerActualCurrent =  cs.getInteger("charger_actual_current"); 
+            fastChargerPresent =  cs.getBoolean("fast_charger_present"); 
+            chargerPower =  cs.getInteger("charger_power"); 
+            chargingState =  Utils.stringToEnum(Status.class, cs.getString("charging_state")); 
+
+            // The following calls aren't well defined in terms of what type and values 
+            // they return. We're leaving them as String for now
+            chargeStartingRange =  cs.getString("charge_starting_range"); 
+            chargeStartingSOC =  cs.getString("charge_starting_soc"); 
+            scheduledChargeStartTime =  cs.getString("scheduled_charging_start_time"); 
+            UserChargeEnableRequest =  cs.getString("user_charge_enable_request"); 
+
+            chargeLimitSOC =  cs.getInteger("charge_limit_soc"); 
+            chargeLimitSOCMax =  cs.getInteger("charge_limit_soc_max"); 
+            chargeLimitSOCMin =  cs.getInteger("charge_limit_soc_min"); 
+            chargeLimitSOCStd =  cs.getInteger("charge_limit_soc_std"); 
+        }
+    }
 }
