@@ -10,6 +10,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
 import org.apache.commons.codec.binary.Base64;
@@ -47,7 +48,7 @@ public class SnapshotState extends APICall {
             "https://streaming.vn.teslamotors.com/stream/%s/?values=%s";
 
     private static final int WakeupRetries = 3;
-    private static final int ReadTimeoutInMillis = 5 * 1000;
+    private static final int ReadTimeoutInMillis = 25 * 1000;
     
 /*------------------------------------------------------------------------------
  *
@@ -116,13 +117,13 @@ public class SnapshotState extends APICall {
     @Override public String toString() {
         if (state == null) return "[ ]";
         return String.format(
-                "Time Stamp: %s.%s\n" +
+                "Time Stamp: %s (%s)\n" +
                 "Speed: %3.1f\n" +
                 "Location: [(Lat: %f, Lng: %3f), Heading: %d, Elevation: %d]\n" +
                 "Charge Info: [SoC: %d, Power: %d]\n" +
                 "Odometer: %7.1f\n" +
                 "Range: %d\n",
-                state.vehicleTimestamp/1000, state.vehicleTimestamp%1000,
+                state.vehicleTimestamp, new Date(state.vehicleTimestamp),
                 state.speed,
                 state.estLat, state.estLng, state.estHeading, state.elevation,
                 state.soc, state.power,
@@ -151,11 +152,6 @@ public class SnapshotState extends APICall {
     
     private BufferedReader refreshReader() {
         // Just try making a connection, maybe we're lucky enough to still be authenticated
-        BufferedReader r = establishStreamingConnection();
-        if (r != null) return r;
-        
-        // Well, that didn't work! Re-authenticate and try again
-        refreshAuthentication();
         return establishStreamingConnection();
     }
     
@@ -188,20 +184,42 @@ public class SnapshotState extends APICall {
         }
     }
 
-    
     private BufferedReader establishStreamingConnection() {
-        if (authenticatedVehicle == null) return null;
+        if (authenticatedVehicle == null) {
+            refreshAuthentication();
+            if (authenticatedVehicle == null) {
+                Tesla.logger.warning("Can't authenticate for streaming!");
+                return null;
+            }
+        }
         
         String endpoint = String.format(
                 endpointFormat, authenticatedVehicle.getStreamingVID(), allKeys);
-
-        try {
-            TextResource r = getAuthAPI(authenticatedVehicle).text(endpoint);
-            return new BufferedReader(new InputStreamReader(r.stream()));
-        } catch (IOException ex) {
-            Tesla.logger.log(Level.INFO, "Auth tokens may have expired", ex.getMessage());
-            return null;
+        
+        RestyWrapper rw = getAuthAPI(authenticatedVehicle);
+        
+        for (int i = 0; i < 5; i++) {
+            try {
+                TextResource r = rw.text(endpoint);
+                if (r.status(200)) {
+                    return new BufferedReader(new InputStreamReader(r.stream()));
+                }
+            } catch (IOException e) {
+                String msg = e.toString();
+                if (msg.contains("Error while reading from GET: [401] Unauthorized")) {
+                    Tesla.logger.log(Level.INFO, "Authorization problem, getting new token");
+                    refreshAuthentication();
+                    if (authenticatedVehicle == null) break;
+                    rw = getAuthAPI(authenticatedVehicle);
+                } else {
+                    Tesla.logger.warning("Snapshot GET failed: " + e);
+                }
+            }
+            Utils.sleep(500);
         }
+        
+        Tesla.logger.warning("Tried 5 times to establish a Snapshot stream - giving up");
+        return null;
     }
     
     

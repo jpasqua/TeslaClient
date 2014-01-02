@@ -35,6 +35,9 @@ public class Options {
             return;
         }
 
+        // Deal with the one 3 letter prefix in the options: PBT. Turn this into BT
+        optionsString = optionsString.replace("PBT", "BT");
+        
         String[] tokens = optionsString.split(",");
         for (String token : tokens) {
             String prefix = token.substring(0,2);
@@ -214,12 +217,14 @@ public class Options {
     //
     
     public enum WheelType {
+        WT1P("Silver 19\""),
+        WTX1("Silver 19\""),
         WT19("Silver 19\""),
         WT21("Silver 21\""),
         WTSP("Gray 21\""),
         WTSG("Gray Perf+ 21\""),
-        WTAE("Aero 19\""),          // FIX: What is the real code for this?
-        WTCY("Cyclone 19\""),       // FIX: What is the real code for this?
+        WTAE("Aero 19\""),
+        WTTB("Cyclone 19\""),
         Unknown("Unknown");
         
         private String descriptiveName;
@@ -250,6 +255,7 @@ public class Options {
         IPMG("Leather, Gray"),
         IPMT("Leather, Tan"),
         IZZW("Perf Leather with Grey Piping, White"),
+        QZMB("Perf Leather with Piping, Black"),
         IZMB("Perf Leather with Piping, Black"),
         IZMG("Perf Leather with Piping, Gray"),
         IZMT("Perf Leather with Piping, Tan"),

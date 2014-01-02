@@ -77,6 +77,9 @@ public class ChargeState extends APICall {
         public int      chargeLimitSOCMin;
         public int      chargeLimitSOCStd;
         
+        public boolean  euVehicle;
+        public int      chargerPhases;
+        
         public State(ChargeState cs) {
             chargeToMaxRange =  cs.getBoolean("charge_to_max_range"); 
             maxRangeCharges =  cs.getInteger("max_range_charge_counter"); 
@@ -108,6 +111,9 @@ public class ChargeState extends APICall {
             chargeLimitSOCMax =  cs.getInteger("charge_limit_soc_max"); 
             chargeLimitSOCMin =  cs.getInteger("charge_limit_soc_min"); 
             chargeLimitSOCStd =  cs.getInteger("charge_limit_soc_std"); 
+            
+            euVehicle = cs.getBoolean("eu_vehicle");
+            chargerPhases = cs.getInteger("charger_phases");
         }
     }
 }

@@ -84,7 +84,18 @@ public class Tesla {
         return TeslaURI + "/" + name;
     }
     
-
+    public static boolean isCarAwake(Vehicle v) {
+        Tesla t = v.getContext();
+        List<Vehicle> cars = new ArrayList<>();
+        if (t.fetchVehiclesInto(cars)) {
+            for (Vehicle car : cars) {
+                if (car.getVIN().equals(v.getVIN())) {
+                    return (!car.status().equals("asleep"));
+                }
+            }
+        }
+        return false;
+    }
     
     //
     // Fetching and storing username
