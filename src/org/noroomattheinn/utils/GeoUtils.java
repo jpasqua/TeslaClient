@@ -171,7 +171,7 @@ public class GeoUtils {
             this.resolution = resolution;
         }
         
-        public String toString() {
+        @Override public String toString() {
             return String.format(
                     "[\n" +
                     "    Location: {%f,%f},\n" +

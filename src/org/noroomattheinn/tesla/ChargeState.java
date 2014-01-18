@@ -43,7 +43,7 @@ public class ChargeState extends APICall {
     // Nested Classes
     //
     
-    public enum Status {Complete, Charging, Disconnected, Unknown};
+    public enum Status {Complete, Charging, Disconnected, Stopped, Unknown};
 
     public static class State extends BaseState {
         public boolean  chargeToMaxRange;
@@ -98,7 +98,9 @@ public class ChargeState extends APICall {
             chargerActualCurrent =  cs.getInteger("charger_actual_current"); 
             fastChargerPresent =  cs.getBoolean("fast_charger_present"); 
             chargerPower =  cs.getInteger("charger_power"); 
-            chargingState =  Utils.stringToEnum(Status.class, cs.getString("charging_state")); 
+            chargingState =  Utils.stringToEnum(Status.class, cs.getString("charging_state"));
+            if (chargingState == Status.Unknown)
+                Tesla.logger.info("Raw charge state: " + cs.toString());
 
             // The following calls aren't well defined in terms of what type and values 
             // they return. We're leaving them as String for now

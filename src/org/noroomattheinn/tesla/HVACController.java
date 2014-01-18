@@ -6,6 +6,7 @@
 
 package org.noroomattheinn.tesla;
 
+import java.util.Locale;
 import org.noroomattheinn.utils.Utils;
 
 /**
@@ -56,7 +57,7 @@ public class HVACController extends APICall {
     }
     
     public Result setTempC(double driverTemp, double passengerTemp) {
-        String command = String.format(tempFormat, driverTemp, passengerTemp);
+        String command = String.format(Locale.US, tempFormat, driverTemp, passengerTemp);
         setAndRefresh(command);
         return new Result(this);
     }

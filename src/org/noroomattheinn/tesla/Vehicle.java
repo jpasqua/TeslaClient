@@ -106,8 +106,8 @@ public class Vehicle {
     
     public RestyWrapper getAPI() { return api; }
     public Tesla getContext() { return tesla; }
-    
-    
+    public boolean isAwake() { return tesla.isCarAwake(this); }
+    public final boolean isAsleep() { return !isAwake(); }
     //
     // Override methods
     //
