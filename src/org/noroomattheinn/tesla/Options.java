@@ -291,6 +291,7 @@ public class Options {
     public enum Region {
         RENA("United States"),
         RENC("Canada"),
+        REEU("Europe"),
         Unknown("Unknown");
 
         private String descriptiveName;
