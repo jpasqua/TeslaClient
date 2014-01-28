@@ -43,7 +43,7 @@ public class ChargeState extends APICall {
     // Nested Classes
     //
     
-    public enum Status {Complete, Charging, Disconnected, Stopped, Unknown};
+    public enum Status {Complete, Charging, Disconnected, Stopped, NoPower, Starting, Unknown};
 
     public static class State extends BaseState {
         public boolean  chargeToMaxRange;
