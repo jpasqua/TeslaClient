@@ -125,7 +125,7 @@ public class Options {
 
 
     public boolean isPerformance() { return hasOption("PF"); }
-    public boolean isPerfPlus() { return hasOption("PX"); }
+    public boolean isPerfPlus() { return hasOption("PX") || wheelType() == WheelType.WTSG; }
     public boolean hasThirdRow() { return hasOption("TR"); }
     public boolean hasAirSuspension() { return hasOption("SU"); }
     public boolean hasSupercharger() { return hasOption("SC"); }    
