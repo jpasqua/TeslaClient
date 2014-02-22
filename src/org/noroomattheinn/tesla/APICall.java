@@ -76,6 +76,7 @@ public abstract class APICall {
         }
     }
     
+    public JSONObject getRawResult() { return this.jsonState; }
     
     protected void setJSONState(JSONObject newState) {
         this.jsonState = newState;
