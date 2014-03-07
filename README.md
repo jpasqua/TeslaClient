@@ -19,6 +19,7 @@ Use these programs at your own risk. The authors do not guaranteed the proper fu
 
 #Contributors
 [Joe Pasqua](https://github.com/jpasqua)
+[Sune Jakobsson](https://github.com/sunejak)
 
 #Preparing your build environment
 
@@ -30,14 +31,14 @@ This project assumes a directory structure that looks like this:
 			src
 	ThirdParty				-- A repository for third party library dependencies
 		apache
-			commons-codec-1.8
-			commons-lang3-3.1
+			commons-codec-1.9
+			commons-lang3-3.3
 			commons-logging-1.1.3
 		geocoder
 		google-gson-2.2.4
 		resty
 
-The Tesla/Tesla directory corrsponds to this github project (TeslaClient.git). 
+The Tesla/TeslaClient directory corresponds to this github project (TeslaClient.git). 
 
 The following commands will create and populate the hierarchy. It assumes that:
 
@@ -56,13 +57,13 @@ Be sure to either set these variables or adapt the commands below:
 
 	# Download the apache libraries
 	cd ThirdParty/apache
-	curl -s -O http://www.eng.lsu.edu/mirrors/apache//commons/codec/binaries/commons-codec-1.8-bin.zip
-	unzip commons-codec-1.8-bin.zip
+	wget http://www.us.apache.org/dist//commons/codec/binaries/commons-codec-1.9-bin.zip
+	unzip commons-codec-1.9-bin.zip
 
-	curl -s -O http://mirror.cc.columbia.edu/pub/software/apache//commons/lang/binaries/commons-lang3-3.1-bin.zip
-	unzip commons-lang3-3.1-bin.zip
+	wget http://www.us.apache.org/dist//commons/lang/binaries/commons-lang3-3.3-bin.zip
+	unzip commons-lang3-3.3-bin.zip
 
-	curl -s -O http://apache.mirrors.hoobly.com//commons/logging/binaries/commons-logging-1.1.3-bin.zip
+	wget http://www.us.apache.org/dist//commons/logging/binaries/commons-logging-1.1.3-bin.zip
 	unzip commons-logging-1.1.3-bin.zip
 	rm *.zip
 
@@ -79,6 +80,11 @@ Be sure to either set these variables or adapt the commands below:
 	# Download the resty library
 	cd resty
 	curl -s -O http://repo2.maven.org/maven2/us/monoid/web/resty/0.3.2/resty-0.3.2.jar
+	cd ..
+
+	# Create the library
+	cd Tesla/TeslaClient
+	ant
 
 #Tests and Samples
 There are two test programs included in the project: <code>BasicTest</code> and <code>Interactive</code>. The former simply runs through a sequence of functions in the client library to demonstrate that it is connecting and working. The second presents an interactive shell that allows the user to issue the various commands that are available through the client library.
