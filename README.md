@@ -82,9 +82,13 @@ Be sure to either set these variables or adapt the commands below:
 	curl -s -O http://repo2.maven.org/maven2/us/monoid/web/resty/0.3.2/resty-0.3.2.jar
 	cd ..
 
-	# Create the library
+	# Create the library and test your car
 	cd Tesla/TeslaClient
-	ant
+	ant run -Darg0=username -Darg1=password
+
+	# Consequent runs ( with the credential stored in cookies.txt )
+
+	ant run
 
 #Tests and Samples
 There are two test programs included in the project: <code>BasicTest</code> and <code>Interactive</code>. The former simply runs through a sequence of functions in the client library to demonstrate that it is connecting and working. The second presents an interactive shell that allows the user to issue the various commands that are available through the client library.

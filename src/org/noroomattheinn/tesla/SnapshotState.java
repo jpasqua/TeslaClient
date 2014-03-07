@@ -118,11 +118,11 @@ public class SnapshotState extends APICall {
         if (state == null) return "[ ]";
         return String.format(
                 "Time Stamp: %s (%s)\n" +
-                "Speed: %3.1f\n" +
+                "Speed: %3.1f miles\n" +
                 "Location: [(Lat: %f, Lng: %3f), Heading: %d, Elevation: %d]\n" +
-                "Charge Info: [SoC: %d, Power: %d]\n" +
-                "Odometer: %7.1f\n" +
-                "Range: %d\n",
+                "Charge Info: [SoC: %d KW, Power: %d KW]\n" +
+                "Odometer: %7.1f miles\n" +
+                "Range: %d miles\n",
                 state.vehicleTimestamp, new Date(state.vehicleTimestamp),
                 state.speed,
                 state.estLat, state.estLng, state.estHeading, state.elevation,
