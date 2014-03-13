@@ -43,10 +43,10 @@ public class RestyWrapper {
  *----------------------------------------------------------------------------*/
 
     private static CircularBuffer<Pair<Long,String>> timestamps = new CircularBuffer<>(100);
-
+    private static Resty.Proxy proxy = null;
+    
     private Resty resty;
     private List<Pair<Integer,Integer>> rateLimits;
-    
     
 /*==============================================================================
  * -------                                                               -------
@@ -69,10 +69,13 @@ public class RestyWrapper {
         } else {
             rateLimits = limits;
         }
+        
         if (readTimeout <= 0) {
-            resty = new Resty();
+            resty = proxy != null ? new Resty(proxy) : new Resty();
         } else {
-            resty = new Resty(new ReadTimeoutOption(readTimeout));
+            resty = proxy != null ? 
+                    new Resty(new ReadTimeoutOption(readTimeout), proxy) :
+                    new Resty(new ReadTimeoutOption(readTimeout));
         }
     }
     
@@ -120,6 +123,11 @@ public class RestyWrapper {
  * 
  *----------------------------------------------------------------------------*/
 
+    public static void setProxy(String proxyHost, int proxyPort) {
+        if (proxyHost == null || proxyPort < 0) proxy = null;
+        else  proxy = new Resty.Proxy(proxyHost, proxyPort);
+    }
+    
     public static FormContent form(String query) {
         return Resty.form(query);
     }
@@ -163,7 +171,7 @@ public class RestyWrapper {
         
         ReadTimeoutOption(int timeout) { this.timeout = timeout; }
         
-        public void apply(URLConnection aConnection) {
+        @Override public void apply(URLConnection aConnection) {
             aConnection.setReadTimeout(timeout);
         }
     }

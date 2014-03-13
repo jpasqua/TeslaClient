@@ -62,6 +62,33 @@ public class GeoUtils {
         return null;
     }
     
+    public static double[] getLatLngForAddr(String addr) {
+        if (addr == null) return null;
+        
+        Geocoder geocoder = new Geocoder();
+        GeocoderRequest geocoderRequest;
+        GeocodeResponse geocoderResponse;
+
+        geocoderRequest = new GeocoderRequestBuilder()
+                .setAddress(addr)
+                .setLanguage("en").getGeocoderRequest();
+        geocoderResponse = geocoder.geocode(geocoderRequest);
+        if (geocoderResponse != null) {
+            if (geocoderResponse.getStatus() == GeocoderStatus.OK) {
+                if (!geocoderResponse.getResults().isEmpty()) {
+                    GeocoderResult geocoderResult = // Get the first result
+                            geocoderResponse.getResults().iterator().next();
+                    double[] loc = new double[2];
+                    LatLng ll = geocoderResult.getGeometry().getLocation();
+                    loc[0] = ll.getLat().doubleValue();
+                    loc[1] = ll.getLng().doubleValue();
+                    return loc;
+                }
+            }
+        }
+        return null;
+    }
+    
     /**
      * Calculate distance between two points in latitude and longitude taking
      * into account height difference. If you are not interested in height

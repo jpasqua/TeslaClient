@@ -66,7 +66,6 @@ public class Tesla {
         api = new RestyWrapper();
         vehicles = new ArrayList<>();
     }
-
     
     //
     // Methods to build endpoint strings
@@ -223,6 +222,9 @@ public class Tesla {
     public List<Vehicle> getVehicles() { return vehicles; }
 
     public void setCookieDir(File cookieDir) { this.cookieDir = cookieDir; }
+    public void setProxy(String proxyHost, int proxyPort) {
+        RestyWrapper.setProxy(proxyHost, proxyPort);
+    }
     
     //
     // Field Accessor Methods
