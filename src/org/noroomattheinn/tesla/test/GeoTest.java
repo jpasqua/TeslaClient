@@ -27,7 +27,7 @@ public class GeoTest {
             address = "Location cannot be determined";
         System.out.println(address);
         
-        double[] loc = GeoUtils.getLatLngForAddr("-"); //530 morey dr, 94025");
+        double[] loc = GeoUtils.getLatLngForAddr("550 morey dr, 94025");
         if (loc == null)
             System.out.println("LatLng cannot be determined");
         else
