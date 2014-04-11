@@ -37,9 +37,13 @@ public class Options {
 
         // Deal with the one 3 letter prefix in the options: PBT. Turn this into BT
         optionsString = optionsString.replace("PBT", "BT");
-        
+
         String[] tokens = optionsString.split(",");
         for (String token : tokens) {
+            if (token.length() < 2) {
+                Tesla.logger.warning("Malformed Option token: " + token);
+                continue;
+            }
             String prefix = token.substring(0,2);
             // X0 options are handled differently. Speculation is that these are
             // the old way Tesla handled things. In this case we store the whole

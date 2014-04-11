@@ -93,8 +93,13 @@ public class ChargeState extends APICall {
             chargeRate =  cs.getDouble("charge_rate"); 
             chargePortOpen =  cs.getBoolean("charge_port_door_open"); 
             scheduledChargePending = cs.getBoolean("scheduled_charging_pending"); 
-            scheduledStart =  cs.getLong("scheduled_charging_start_time"); 
-            chargerPilotCurrent =  cs.getInteger("charger_pilot_current"); 
+            scheduledStart =  cs.getLong("scheduled_charging_start_time");
+            try {
+                chargerPilotCurrent =  cs.getRawResult().getInt("charger_pilot_current");
+            } catch (Exception e) {
+                chargerPilotCurrent = -1;
+                Tesla.logger.finest("Pilot Current is null");
+            }
             chargerActualCurrent =  cs.getInteger("charger_actual_current"); 
             fastChargerPresent =  cs.getBoolean("fast_charger_present"); 
             chargerPower =  cs.getInteger("charger_power"); 
