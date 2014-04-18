@@ -63,8 +63,17 @@ public class ChargeState extends APICall {
         public int      chargerActualCurrent;
         public boolean  fastChargerPresent;
         public int      chargerPower;
-        public Status    chargingState;
+        public Status   chargingState;
 
+        public boolean  batteryHeaterOn;
+        public boolean  notEnoughPowerToHeat;
+        public String   fastChargerType;
+        public int      usableBatteryLevel;
+        public double   energyAdded;
+        public double   ratedMilesAdded;
+        public double   idealMilesAdded;
+        public boolean  chargeEnableRequest;
+        
         // The following calls aren't well defined in terms of what type and values 
         // they return. We're leaving them as String for now
         public String   chargeStartingRange;
@@ -107,7 +116,7 @@ public class ChargeState extends APICall {
             if (chargingState == Status.Unknown)
                 Tesla.logger.info("Raw charge state: " + cs.toString());
 
-            // The following calls aren't well defined in terms of what type and values 
+            // The following fields aren't well defined in terms of what type and values 
             // they return. We're leaving them as String for now
             chargeStartingRange =  cs.getString("charge_starting_range"); 
             chargeStartingSOC =  cs.getString("charge_starting_soc"); 
@@ -121,6 +130,16 @@ public class ChargeState extends APICall {
             
             euVehicle = cs.getBoolean("eu_vehicle");
             chargerPhases = cs.getInteger("charger_phases");
+            
+            batteryHeaterOn = cs.getBoolean("battery_heater_on");
+            notEnoughPowerToHeat = cs.getBoolean("not_enough_power_to_heat");
+            fastChargerType = cs.getString("fast_charger_type");
+            usableBatteryLevel =  cs.getInteger("usable_battery_level"); 
+            energyAdded = cs.getDouble("charge_energy_added");
+            ratedMilesAdded = cs.getDouble("charge_miles_added_rated");
+            idealMilesAdded = cs.getDouble("charge_miles_added_ideal");
+            chargeEnableRequest = cs.getBoolean("charge_enable_request");
+
         }
     }
 }

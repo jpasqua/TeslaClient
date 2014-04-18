@@ -63,6 +63,11 @@ public class Tesla {
     //
     
     public Tesla() {
+        this(null, -1);
+    }
+    
+    public Tesla(String proxyHost, int proxyPort) {
+        RestyWrapper.setProxy(proxyHost, proxyPort);
         api = new RestyWrapper();
         vehicles = new ArrayList<>();
     }

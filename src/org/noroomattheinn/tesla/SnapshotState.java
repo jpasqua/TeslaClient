@@ -206,8 +206,10 @@ public class SnapshotState extends APICall {
                 }
             } catch (IOException e) {
                 String msg = e.toString();
-                if (msg.contains("Error while reading from GET: [401] Unauthorized")) {
-                    Tesla.logger.log(Level.INFO, "Authorization problem, getting new token");
+                if (msg.contains("GET: [401] Unauthorized") ||
+                    msg.contains("GET: [401] provide valid authentication") ||
+                    msg.contains("Stream closed")) {
+                    Tesla.logger.log(Level.INFO, "Getting new token due to problem reading stream: " + msg);
                     refreshAuthentication();
                     if (authenticatedVehicle == null) break;
                     rw = getAuthAPI(authenticatedVehicle);
