@@ -229,6 +229,7 @@ public class Options {
         WTSG("Gray Perf+ 21\""),
         WTAE("Aero 19\""),
         WTTB("Cyclone 19\""),
+        WTTP("Cyclone 19\""),
         Unknown("Unknown");
         
         private String descriptiveName;
@@ -253,27 +254,34 @@ public class Options {
 
     }
 
+    public enum InteriorColor {Black, Tan, Gray, White};
+    
     public enum SeatType {
-        IBMB("Base Textile, Black"),
-        IPMB("Leather, Black"),
-        IPMG("Leather, Gray"),
-        IPMT("Leather, Tan"),
-        IZZW("Perf Leather with Grey Piping, White"),
-        QZMB("Perf Leather with Piping, Black"),
-        IZMB("Perf Leather with Piping, Black"),
-        IZMG("Perf Leather with Piping, Gray"),
-        IZMT("Perf Leather with Piping, Tan"),
-        ISZW("Signature Perforated Leather, White"),
-        ISZT("Signature Perforated Leather, Tan"),
-        ISZB("Signature Perforated Leather, Black"),
-        Unknown("Unknown");
+        IBMB("Base Textile, Black", InteriorColor.Black),
+        IPMB("Leather, Black", InteriorColor.Black),
+        IPMG("Leather, Gray", InteriorColor.Gray),
+        IPMT("Leather, Tan", InteriorColor.Tan),
+        IZZW("Perf Leather with Grey Piping, White", InteriorColor.White),
+        QYMT("Leather, Tan", InteriorColor.Tan),
+        QZMB("Perf Leather with Piping, Black", InteriorColor.Black),
+        IZMB("Perf Leather with Piping, Black", InteriorColor.Black),
+        IZMG("Perf Leather with Piping, Gray", InteriorColor.Gray),
+        IZMT("Perf Leather with Piping, Tan", InteriorColor.Tan),
+        ISZW("Signature Perforated Leather, White", InteriorColor.White),
+        ISZT("Signature Perforated Leather, Tan", InteriorColor.Tan),
+        ISZB("Signature Perforated Leather, Black", InteriorColor.Black),
+        Unknown("Unknown", InteriorColor.Gray);
 
         private String descriptiveName;
-
-        SeatType(String name) { this.descriptiveName = name; }
-
-        @Override
-        public String toString() { return descriptiveName; }
+        private InteriorColor color;
+        
+        SeatType(String name, InteriorColor c) {
+            this.descriptiveName = name;
+            this.color = c;
+        }
+        
+        public InteriorColor getColor() { return color; }
+        @Override public String toString() { return descriptiveName; }
 
     }
 
