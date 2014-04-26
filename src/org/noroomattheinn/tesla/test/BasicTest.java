@@ -49,19 +49,24 @@ public class BasicTest {
         Tesla.logger.log(Level.INFO, "Number of vehicles: {0}", vehicles.size());
         
         for (Vehicle vehicle : vehicles) {
-            SnapshotState ss = new SnapshotState(vehicle);
-            ss.refresh(); System.out.println(ss);
-            while (ss.refreshFromStream()) {
-                System.out.println(ss);
-                Utils.sleep(500);
-            }
-            System.out.format("%s\n", vehicle);
-            System.out.format("Mobile Enabled: %s\n", vehicle.mobileEnabled());
+//            SnapshotState ss = new SnapshotState(vehicle);
+//            ss.refresh(); System.out.println(ss);
+//            while (ss.refreshFromStream()) {
+//                System.out.println(ss);
+//                Utils.sleep(500);
+//            }
+//            System.out.format("%s\n", vehicle);
+//            System.out.format("Mobile Enabled: %s\n", vehicle.mobileEnabled());
             VehicleState vs = new VehicleState(vehicle); vs.refresh();
-            System.out.format("SW Version: %s\n", vs.state.version);
-            System.out.format("Pano Percent: %d\n", vs.state.panoPercent);
-            System.out.format("Pano State: %s\n", vs.state.panoState);
-            System.out.format("DoorState: %s\n", vs);
+            try {
+                System.out.println(vs.getRawResult().toString(4));
+            } catch (Exception e) {
+                System.err.println(e.getMessage());
+            }
+//            System.out.format("SW Version: %s\n", vs.state.version);
+//            System.out.format("Pano Percent: %d\n", vs.state.panoPercent);
+//            System.out.format("Pano State: %s\n", vs.state.panoState);
+//            System.out.format("DoorState: %s\n", vs);
             
 //            DoorController doorController = new DoorController(vehicle);
 //            doorController.setPano(DoorController.PanoCommand.vent);
@@ -70,20 +75,20 @@ public class BasicTest {
 //            System.out.format("Pano State: %s\n", ds.panoState());
 //            System.out.format("VehicleState: %s\n", ds);
 
-            GUIState gui = new GUIState(vehicle); gui.refresh();
-            System.out.format("Charge Rate Units: %s\n", gui.state.chargeRateUnits);
-            System.out.format("GUIState dump: %s\n", gui.toString());
-            HVACState hvac = new HVACState(vehicle); hvac.refresh();
-            System.out.format("Fan Status: %d\n", hvac.state.fanStatus);
-            ChargeState cs = new ChargeState(vehicle); cs.refresh();
-            System.out.format("FastChargerPresent: %s\n", cs.state.fastChargerPresent);
-            System.out.format(
-                    "SOC Limit: %d, Min %d, Max: %d, Std: %d\n",
-                    cs.state.chargeLimitSOC, cs.state.chargeLimitSOCMin,
-                    cs.state.chargeLimitSOCMax, cs.state.chargeLimitSOCStd);
-            System.out.format("ChargeState dump: %s\n", cs.toString());
-            DrivingState drs = new DrivingState(vehicle); drs.refresh();
-            System.out.format("DrivingState dump: %s\n", drs.toString());
+//            GUIState gui = new GUIState(vehicle); gui.refresh();
+//            System.out.format("Charge Rate Units: %s\n", gui.state.chargeRateUnits);
+//            System.out.format("GUIState dump: %s\n", gui.toString());
+//            HVACState hvac = new HVACState(vehicle); hvac.refresh();
+//            System.out.format("Fan Status: %d\n", hvac.state.fanStatus);
+//            ChargeState cs = new ChargeState(vehicle); cs.refresh();
+//            System.out.format("FastChargerPresent: %s\n", cs.state.fastChargerPresent);
+//            System.out.format(
+//                    "SOC Limit: %d, Min %d, Max: %d, Std: %d\n",
+//                    cs.state.chargeLimitSOC, cs.state.chargeLimitSOCMin,
+//                    cs.state.chargeLimitSOCMax, cs.state.chargeLimitSOCStd);
+//            System.out.format("ChargeState dump: %s\n", cs.toString());
+//            DrivingState drs = new DrivingState(vehicle); drs.refresh();
+//            System.out.format("DrivingState dump: %s\n", drs.toString());
 
             
             //ActionController actions = new ActionController(vehicle);
