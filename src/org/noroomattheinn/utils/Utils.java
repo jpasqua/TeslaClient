@@ -6,7 +6,11 @@
 
 package org.noroomattheinn.utils;
 
+import java.io.UnsupportedEncodingException;
+import java.lang.management.ManagementFactory;
+import java.lang.management.RuntimeMXBean;
 import java.util.HashMap;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -156,5 +160,28 @@ public class Utils {
 
     public interface Callback<P,R> {
         public R call(P parameter);
+    }
+    
+    public static String toB64(byte[] bytes) {
+        return javax.xml.bind.DatatypeConverter.printBase64Binary(bytes);
+    }
+    
+    public static byte[] fromB64(String s) {
+        return javax.xml.bind.DatatypeConverter.parseBase64Binary(s);
+    }
+    
+    public static String decodeB64(String s) {
+        if (s == null) return null;
+        try {
+            return new String(fromB64(s), "UTF-8");
+        } catch (UnsupportedEncodingException ex) {
+            Logger.getLogger(Utils.class.getName()).log(Level.SEVERE, null, ex);
+            return null;
+        }
+    }
+    
+    public static List<String> getJVMArgs() {
+        RuntimeMXBean runtimeMxBean = ManagementFactory.getRuntimeMXBean();
+        return runtimeMxBean.getInputArguments();
     }
 }
