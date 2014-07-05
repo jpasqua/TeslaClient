@@ -47,6 +47,7 @@ public class Versions {
         @XmlElement private URL urlForMac;
         @XmlElement private URL urlForWindows;
         @XmlElement private Boolean experimental = false;
+        @XmlElement private Boolean invisible = false;
         
         public String getReleaseNumber() { return number; }
         public Date getReleaseDate() { return date; }
@@ -54,6 +55,7 @@ public class Versions {
         public URL getMacURL() { return urlForMac; }
         public URL getWindowsURL() { return urlForWindows; }
         public Boolean getExperimental() { return experimental; }
+        public Boolean getInvisible() { return invisible; }
     }
     
     public List<Release> getReleases() { return releases; }
@@ -90,6 +92,8 @@ public class Versions {
                 System.out.println("Mac URL: " + r.getMacURL());
                 System.out.println("Windows URL: " + r.getWindowsURL());
                 System.out.println("IsExperimental: " + r.getExperimental());
+                System.out.println("IsInvisible: " + r.getInvisible());
+                System.out.println("------------------------------");
             }
 
             JAXBContext jc = JAXBContext.newInstance(Versions.class);
