@@ -77,8 +77,8 @@ public class Versions {
     
     public static void main(String[] args) throws Exception {
         Versions versions = Versions.getVersionInfo(
-                //"https://dl.dropboxusercontent.com/u/7045813/VisibleTesla/versions.xml");
-                "https://dl.dropboxusercontent.com/u/7045813/VisibleTesla/test_versions.xml");
+              //"https://dl.dropboxusercontent.com/u/7045813/VisibleTesla/versions.xml");
+                "https://dl.dropboxusercontent.com/u/7045813/VTExtras/test_versions.xml");
         
         
         if (versions == null) {
