@@ -68,7 +68,7 @@ public class Tesla {
     
     public Tesla(String proxyHost, int proxyPort) {
         RestyWrapper.setProxy(proxyHost, proxyPort);
-        api = new RestyWrapper();
+        api = new RestyWrapper(60*1000);    // Never wait more than a minute
         vehicles = new ArrayList<>();
     }
     
@@ -218,7 +218,7 @@ public class Tesla {
                 list.add(vehicle);
             }
         } catch (IOException | JSONException ex) {
-            logger.log(Level.INFO, "Problem fetching vehicle list", ex);
+            logger.warning("Problem fetching vehicle list: " + ex);
             return false;
         }
         return true;
