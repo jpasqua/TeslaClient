@@ -16,6 +16,7 @@ import com.google.code.geocoder.model.LatLng;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import org.noroomattheinn.tesla.Tesla;
 import us.monoid.json.JSONArray;
 import us.monoid.json.JSONException;
@@ -30,6 +31,8 @@ import us.monoid.web.Resty;
 
 public class GeoUtils {
 
+    private static final Map<String,String> cache = new LRUMap<>(10);
+    
     //
     // Public Class Methods
     //
@@ -42,9 +45,19 @@ public class GeoUtils {
         }
 
     public static String getAddrForLatLong(String lat, String lng) {
+        String resultAddr;
         Geocoder geocoder = new Geocoder();
         GeocoderRequest geocoderRequest;
         GeocodeResponse geocoderResponse;
+        
+        // Round to 5 digits to avoid jitter
+        lat = String.format("%.5f", Double.valueOf(lat));
+        lng = String.format("%.5f", Double.valueOf(lng));
+        
+        String cacheKey = lat+lng;
+        synchronized (cache) { resultAddr = cache.get(cacheKey); }
+        if (resultAddr != null)
+            return resultAddr;
 
         geocoderRequest = new GeocoderRequestBuilder()
                 .setLocation(new LatLng(lat, lng))
@@ -55,7 +68,9 @@ public class GeoUtils {
                 if (!geocoderResponse.getResults().isEmpty()) {
                     GeocoderResult geocoderResult = // Get the first result
                             geocoderResponse.getResults().iterator().next();
-                    return geocoderResult.getFormattedAddress();
+                    resultAddr = geocoderResult.getFormattedAddress();
+                    synchronized (cache) { cache.put(cacheKey, resultAddr); }
+                    return resultAddr;
                 }
             }
         }
@@ -207,4 +222,5 @@ public class GeoUtils {
                     "]\n", lat, lng, elevation, resolution);
         }
     }
+    
 }
