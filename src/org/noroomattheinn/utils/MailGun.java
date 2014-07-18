@@ -28,6 +28,7 @@ public class MailGun {
     }
 
     public boolean send(String to, String subject, String message) {
+        to = to.replaceAll("\\s+", "");  // In case there is a comma-separated list of addresses
         FormContent fc = RestyWrapper.form(
                 "from=notifier@visibletesla.com" +
                 "&to="+to +
