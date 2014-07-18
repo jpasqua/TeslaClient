@@ -19,6 +19,7 @@ import org.noroomattheinn.utils.RestyWrapper;
 import us.monoid.json.JSONArray;
 import us.monoid.json.JSONException;
 import us.monoid.web.FormContent;
+import us.monoid.web.JSONResource;
 import us.monoid.web.TextResource;
 
 /**
@@ -211,7 +212,8 @@ public class Tesla {
     
     boolean fetchVehiclesInto(List<Vehicle> list) {
         try {
-            JSONArray rawVehicleData = api.json(endpoint("vehicles")).array();
+            JSONResource r = api.json(endpoint("vehicles"));
+            JSONArray rawVehicleData = r.array();
             int numVehicles = rawVehicleData.length();
             for (int i = 0; i < numVehicles; i++) {
                 Vehicle vehicle = new Vehicle(this, rawVehicleData.getJSONObject(i));
