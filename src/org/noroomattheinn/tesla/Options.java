@@ -38,6 +38,10 @@ public class Options {
         // Deal with the one 3 letter prefix in the options: PBT. Turn this into BT
         optionsString = optionsString.replace("PBT", "BT");
 
+        // Sometimes it appears that a P85+ will have two wheel types: WTSG and WTX0
+        // Only the last is remembered. Make sure it's always WTSG
+        optionsString = optionsString.replace("WTX0", "WTSG");
+
         String[] tokens = optionsString.split(",");
         for (String token : tokens) {
             if (token.length() < 2) {
@@ -132,7 +136,7 @@ public class Options {
     public boolean isPerfPlus() { return hasOption("PX") || wheelType() == WheelType.WTSG; }
     public boolean hasThirdRow() { return hasOption("TR"); }
     public boolean hasAirSuspension() { return hasOption("SU"); }
-    public boolean hasSupercharger() { return hasOption("SC"); }    
+    public boolean hasSupercharger() { return hasOption("SC") || isPerfPlus(); }    
     public boolean hasTechPackage() { return hasOption("TP"); }
     public boolean hasAudioUpgrade() { return hasOption("AU"); }
     public boolean hasTwinCharger() { return hasOption("CH"); }
@@ -236,8 +240,7 @@ public class Options {
 
         WheelType(String name) { this.descriptiveName = name; }
 
-        @Override
-        public String toString() { return descriptiveName; }
+        @Override public String toString() { return descriptiveName; }
     }
 
     public enum TrimLevel  {
