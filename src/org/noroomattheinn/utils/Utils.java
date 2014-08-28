@@ -6,13 +6,19 @@
 
 package org.noroomattheinn.utils;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.io.UnsupportedEncodingException;
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
+import java.nio.channels.FileLock;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.noroomattheinn.tesla.Tesla;
 
 /**
  * Utils
@@ -75,6 +81,17 @@ public class Utils {
             m.put(keys[i], values[i]);
         }
         return m;
+    }
+    
+    public static <K,V> void fillMap(Map<K,V> m, Object... kv) {
+        int length = kv.length;
+        if (length % 2 != 0)
+            throw new IllegalArgumentException("Mismatched keys and values");
+        for (int i = 0; i < length;) {
+            K key   = cast(kv[i++]);
+            V value = cast(kv[i++]);
+            m.put(key, value);
+        }
     }
     
     /*
@@ -183,5 +200,28 @@ public class Utils {
     public static List<String> getJVMArgs() {
         RuntimeMXBean runtimeMxBean = ManagementFactory.getRuntimeMXBean();
         return runtimeMxBean.getInputArguments();
+    }
+    
+    /**
+     * Lock a global resource between instances of Java running in different
+     * processes. This can be used to ensure that only one instance of an
+     * application is running. The lock is obtained by locking a file in
+     * the file system that is agreed upon by all parties involved in the locking
+     * process.
+     * @param lockName  The file to lock
+     * @param folder    The folder containing the file to lock
+     * @return          true if this process obtained the lock
+     *                  false if the lock is already held by another process
+     */
+    public static boolean obtainLock(String lockName, File folder) {
+        File lockFile = new File(folder, lockName);
+        try {
+            RandomAccessFile raf = new RandomAccessFile(lockFile, "rw");
+            FileLock instanceLock = raf.getChannel().tryLock();
+            return instanceLock != null;
+        } catch (IOException ex ) {
+            Tesla.logger.severe(ex.getMessage());
+            return false;
+        }
     }
 }
