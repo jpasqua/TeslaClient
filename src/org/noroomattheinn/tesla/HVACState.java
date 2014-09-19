@@ -14,7 +14,7 @@ import org.noroomattheinn.utils.Utils;
  * @author Joe Pasqua <joe at NoRoomAtTheInn dot org>
  */
 
-public class HVACState extends APICall {
+public class HVACState extends StateAPI {
 
     public State state;
     
@@ -23,16 +23,13 @@ public class HVACState extends APICall {
     //
     
     public HVACState(Vehicle v) {
-        super(v, Tesla.command(v.getVID(), "climate_state"));
+        super(v, Tesla.vehicleData(v.getVID(), "climate_state"), "HVAC State");
     }
     
-    @Override protected BaseState setState(boolean valid) {
-        return (state = valid ? new State(this) : null);
+    @Override protected void setState(boolean valid) {
+        state = valid ? new State(this) : null;
     }
 
-    @Override public String getStateName() { return "HVAC State"; }
-
-    
     //
     // Override methods
     //

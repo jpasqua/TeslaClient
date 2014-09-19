@@ -28,7 +28,7 @@ import us.monoid.web.TextResource;
  * @author Joe Pasqua <joe at NoRoomAtTheInn dot org>
  */
 
-public class SnapshotState extends APICall {
+public class SnapshotState extends StateAPI {
     
     public State state;
     
@@ -66,17 +66,13 @@ public class SnapshotState extends APICall {
  * -------                                                               -------
  *============================================================================*/
     
-    // Accessors
-    
-    @Override public String getStateName() { return "Unstreamed State"; }
-    
-    @Override protected BaseState setState(boolean valid) {
-        return (state = valid ? new State(this) : null);
+    @Override protected void setState(boolean valid) {
+        state = valid ? new State(this) : null;
     }
     
     // Constructors
     public SnapshotState(Vehicle v) {
-        super(v);
+        super(v, "UNUSED", "Snapshot State");
     }
     
 

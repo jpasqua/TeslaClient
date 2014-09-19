@@ -82,17 +82,17 @@ public class Interactive  {
     
     private class LoginHandler extends Handler {
         LoginHandler() { super("login", "Connect to Tesla", "l"); }
-        public boolean execute() {
+        @Override public boolean execute() {
             // Try connecting with stored credentials. If that doesn't work
             // then prompt the user for a username / password and try again
             System.out.print("Attempting automatic connection...");
-            if (tesla.connect()) {
+            if (false /*tesla.connect()*/) {
                 System.out.println("done");
             } else {
                 System.out.println("Sorry, Credentials required");
                 String username = CLUtils.getLine("Username");
                 String password = CLUtils.getPassword();
-                if (!tesla.connect(username, password, true)) {
+                if (!tesla.connect(username, password)) {
                     System.err.println("Unable to connect with those credentials");
                     return true;
                 }
@@ -114,7 +114,7 @@ public class Interactive  {
 
     private class SelectHandler extends Handler {
         SelectHandler() { super("select", "Select a vehicle"); }
-        public boolean execute() {             
+        @Override public boolean execute() {             
             if (vehicles.size() == 1)
                 selectedVehicle = vehicles.get(0);
             else {
@@ -131,7 +131,7 @@ public class Interactive  {
 
     private class ListHandler extends Handler {
         ListHandler() { super("list", "List all Vehicles"); }
-        public boolean execute() {
+        @Override public boolean execute() {
             int index = 1;
             for (Vehicle v : vehicles) {
                 System.out.println("Vehicle #" + index++);

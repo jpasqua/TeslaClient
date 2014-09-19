@@ -65,8 +65,10 @@ public class HVACHandler extends TeslaHandler  {
     class TemperatureHandler extends Handler {
         TemperatureHandler() { super("temp", "Set the temperature", "t"); }
         public boolean execute() {
-            float temp = (float)CLUtils.getNumberInRange("Temp (F)", 65.0, 75.0);
-            controller.setTempF(temp, temp);
+            //float temp = (float)CLUtils.getNumberInRange("Temp (F)", 65.0, 75.0);
+            //controller.setTempF(temp, temp);
+            float temp = (float)CLUtils.getNumberInRange("Temp (C)", 17.0, 22.0);
+            controller.setTempC(temp, temp);
             return true;
         }
     }

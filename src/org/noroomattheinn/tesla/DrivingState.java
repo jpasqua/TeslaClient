@@ -13,7 +13,7 @@ package org.noroomattheinn.tesla;
  * @author Joe Pasqua <joe at NoRoomAtTheInn dot org>
  */
 
-public class DrivingState extends APICall {
+public class DrivingState extends StateAPI {
     
     public State state;
     
@@ -22,11 +22,11 @@ public class DrivingState extends APICall {
     //
     
     public DrivingState(Vehicle v) {
-        super(v, Tesla.command(v.getVID(), "drive_state"));
+        super(v, Tesla.vehicleData(v.getVID(), "drive_state"), "Drive State");
     }
     
-    @Override protected BaseState setState(boolean valid) {
-        return (state = valid ? new State(this) : null);
+    @Override protected void setState(boolean valid) {
+        state = valid ? new State(this) : null;
     }
     
     public static class State extends BaseState {

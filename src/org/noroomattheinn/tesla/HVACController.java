@@ -21,19 +21,17 @@ public class HVACController extends APICall {
     // Instance Variables - These are effectively constants
     private final String startCommand;
     private final String stopCommand;
-    private final String tempFormat;
-    
+    private final String tempsCommand;
     
     //
     // Constructors
     //
     
     public HVACController(Vehicle v) {
-        super(v);
-        startCommand = Tesla.command(v.getVID(), "auto_conditioning_start");
-        stopCommand = Tesla.command(v.getVID(), "auto_conditioning_stop");
-        tempFormat = Tesla.command(
-                v.getVID(), "set_temps?driver_temp=%3.1f&passenger_temp=%3.1f");
+        super(v, "HVAC Controller");
+        startCommand = Tesla.vehicleCommand(v.getVID(), "auto_conditioning_start");
+        stopCommand = Tesla.vehicleCommand(v.getVID(), "auto_conditioning_stop");
+        tempsCommand = Tesla.vehicleCommand(v.getVID(), "set_temps");
     }
 
     
@@ -47,18 +45,20 @@ public class HVACController extends APICall {
     }
     
     public Result startAC() {
-        setAndRefresh(startCommand);
+        invokeCommand(startCommand);
         return new Result(this);
     }
 
     public Result stopAC() {
-        setAndRefresh(stopCommand);
+        invokeCommand(stopCommand);
         return new Result(this);
     }
     
     public Result setTempC(double driverTemp, double passengerTemp) {
-        String command = String.format(Locale.US, tempFormat, driverTemp, passengerTemp);
-        setAndRefresh(command);
+        String tempsPayload = String.format(Locale.US,
+                "{'driver_temp' : '%3.1f', 'passenger_temp' : '%3.1f'}",
+                driverTemp, passengerTemp);
+        invokeCommand(tempsCommand, tempsPayload);
         return new Result(this);
     }
     

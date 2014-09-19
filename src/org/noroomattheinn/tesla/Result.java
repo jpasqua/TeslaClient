@@ -20,7 +20,6 @@ public class Result {
     public boolean success;
     public String explanation;
     
-    
     //
     // Constructors
     //

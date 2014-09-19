@@ -225,15 +225,21 @@ public class Options {
     //
     
     public enum WheelType {
+        WT19("Silver 19\""),
         WT1P("Silver 19\""),
         WTX1("Silver 19\""),
-        WT19("Silver 19\""),
-        WT21("Silver 21\""),
-        WTSP("Gray 21\""),
-        WTSG("Gray Perf+ 21\""),
         WTAE("Aero 19\""),
-        WTTB("Cyclone 19\""),
-        WTTP("Cyclone 19\""),
+        WTAP("Aero 19\""),
+        WTTB("Turbine 19\""),
+        WTTP("Turbine 19\""),
+        WTTG("Turbine 19\" Charcoal"),
+        WTGP("Turbine 19\" Charcoal"),
+        WT21("Silver 21\""),
+        WT2E("Silver 21\" Euro"),
+        WTSS("Super 21\" Silver"),
+        WTSP("Charcoal 21\""),
+        WTSE("Charcoal 21\" Euro"),
+        WTSG("Super 21\" Gray"),
         Unknown("Unknown");
         
         private String descriptiveName;
@@ -326,6 +332,7 @@ public class Options {
         PMMB("Metallic Blue"),
         PMSG("Metallic Green"),
         PPSW("Pearl White"),
+        PMNG("Steel Grey"),
         PPMR("Premium Multicoat Red"),
         PPSR("Premium Signature Red"),
         Unknown("Unknown");

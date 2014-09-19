@@ -13,7 +13,7 @@ package org.noroomattheinn.tesla;
  * @author Joe Pasqua <joe at NoRoomAtTheInn dot org>
  */
 
-public class GUIState extends APICall {
+public class GUIState extends StateAPI {
     
     public State state;
     
@@ -22,14 +22,12 @@ public class GUIState extends APICall {
     //
     
     public GUIState(Vehicle v) {
-        super(v, Tesla.command(v.getVID(), "gui_settings"));
+        super(v, Tesla.vehicleData(v.getVID(), "gui_settings"), "GUI State");
     }
     
-    @Override protected BaseState setState(boolean valid) {
-        return (state = valid ? new State(this) : null);
+    @Override protected void setState(boolean valid) {
+        state = valid ? new State(this) : null;
     }
-    
-    @Override public String getStateName() { return "GUI State"; }
     
     public static class State extends BaseState {
         public String distanceUnits;

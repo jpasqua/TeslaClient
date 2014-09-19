@@ -18,7 +18,8 @@ public class DoorController extends APICall {
     private final String openChargePortCommand;
     private final String unlockCommand;
     private final String lockCommand;
-    private final String sunroofFormat;
+    private final String sunroofCommand;
+    private final String openTrunkCommand;
     
     
     //
@@ -26,11 +27,12 @@ public class DoorController extends APICall {
     //
     
     public DoorController(Vehicle v) {
-        super(v);
-        openChargePortCommand = Tesla.command(v.getVID(), "charge_port_door_open");
-        unlockCommand = Tesla.command(v.getVID(), "door_unlock");
-        lockCommand = Tesla.command(v.getVID(), "door_lock");
-        sunroofFormat = Tesla.command(v.getVID(), "sun_roof_control?state=%s");
+        super(v, "DoorController");
+        openChargePortCommand = Tesla.vehicleCommand(v.getVID(), "charge_port_door_open");
+        unlockCommand = Tesla.vehicleCommand(v.getVID(), "door_unlock");
+        lockCommand = Tesla.vehicleCommand(v.getVID(), "door_lock");
+        sunroofCommand = Tesla.vehicleCommand(v.getVID(), "sun_roof_control");
+        openTrunkCommand = Tesla.vehicleCommand(v.getVID(), "trunk_open");
     }
 
     
@@ -39,7 +41,7 @@ public class DoorController extends APICall {
     //
     
     public Result setLockState(boolean locked) {
-        setAndRefresh(locked ? lockCommand : unlockCommand);
+        invokeCommand(locked ? lockCommand : unlockCommand);
         return new Result(this);
     }
     
@@ -48,16 +50,30 @@ public class DoorController extends APICall {
     public Result unlockDoors() { return setLockState(false); }
     
     public Result openChargePort() {
-        setAndRefresh(openChargePortCommand);
+        invokeCommand(openChargePortCommand);
+        return new Result(this);
+    }
+    
+    public Result openFrunk() { // Requires 6.0 or greater
+        invokeCommand(openTrunkCommand, "{'whichTrunk' : 'front'}");
+        return new Result(this);
+    }
+    
+    public Result openTrunk() { // Requires 6.0 or greater
+        invokeCommand(openTrunkCommand, "{'whichTrunk' : 'rear'}");
         return new Result(this);
     }
     
     public Result setPano(PanoCommand cmd) {
-        String command = String.format(sunroofFormat, cmd.name());
-        setAndRefresh(command);
+        String payload = String.format("{'state' : '%s'}", cmd.name());
+        invokeCommand(sunroofCommand, payload);
         return new Result(this);
     }
     
+    public Result stopPano() {
+        invokeCommand(sunroofCommand, "{'state' : 'stop'}");
+        return new Result(this);
+    }
     
     //
     // Nested Classes

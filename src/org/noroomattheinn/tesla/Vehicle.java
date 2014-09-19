@@ -43,6 +43,10 @@ public class Vehicle {
     private String      status;
     private Options     options;
     private String      baseValues;
+    private String      displayName;
+    private boolean     remoteStartEnabled;
+    private boolean     notificationsEnabled;
+    private boolean     calendarEnabled;
     
     //
     // Constructors
@@ -60,7 +64,11 @@ public class Vehicle {
         streamingVID = description.optString("vehicle_id");
         vin = description.optString("vin");
         status = description.optString("state");
-        
+        displayName = description.optString("display_name");
+        remoteStartEnabled = description.optBoolean("remote_start_enabled");
+        notificationsEnabled = description.optBoolean("notifications_enabled");
+        calendarEnabled = description.optBoolean("calendar_enabled");
+
         // Get the streaming tokens if they exist...
         streamingTokens = new String[2];
         try {
@@ -88,17 +96,20 @@ public class Vehicle {
     public String   status() { return status; }
     public Options  getOptions() { return options; }
     public String   getStreamingToken() { return streamingTokens[0]; }
+    public String   getDisplayName() { return displayName; }
+    public boolean  remoteStartEnabled() { return remoteStartEnabled; }
+    public boolean  notificationsEnabled() { return notificationsEnabled; }
+    public boolean  calendarEnabled() { return calendarEnabled; }
+    public String   getUnderlyingValues() { return baseValues; }
     public boolean  mobileEnabled() {
         try {
-            JSONResource resource = api.json(Tesla.endpoint(vehicleID, "mobile_enabled"));
+            JSONResource resource = api.json(Tesla.vehicleSpecific(vehicleID, "mobile_enabled"));
             return resource.object().getBoolean("result");
         } catch (IOException | JSONException e) {
             return false;
         }
     }
-    public String getUnderlyingValues() {
-        return baseValues;
-    }
+    
     
     //
     // Methods to get context

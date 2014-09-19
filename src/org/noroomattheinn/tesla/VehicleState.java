@@ -18,7 +18,7 @@ import org.noroomattheinn.utils.Utils;
  * 
  * @author Joe Pasqua <joe at NoRoomAtTheInn dot org>
  */
-public class VehicleState extends APICall {
+public class VehicleState extends StateAPI {
     
     public State state;
     
@@ -27,16 +27,14 @@ public class VehicleState extends APICall {
     //
     
     public VehicleState(Vehicle v) {
-        super(v, Tesla.command(v.getVID(), "vehicle_state"));
+        super(v, Tesla.vehicleData(v.getVID(), "vehicle_state"), "Vehicle State");
     }
     
-    @Override protected BaseState setState(boolean valid) {
-        return (state = valid ? new State(this) : null);
+    @Override protected void setState(boolean valid) {
+        state = valid ? new State(this) : null;
     }
     
     
-    @Override public String getStateName() { return "Door State"; }
-            
     //
     // Override Methods
     //

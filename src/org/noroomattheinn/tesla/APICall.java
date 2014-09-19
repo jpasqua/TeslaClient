@@ -7,10 +7,11 @@
 package org.noroomattheinn.tesla;
 
 import java.io.IOException;
-import java.util.logging.Level;
 import org.noroomattheinn.utils.RestyWrapper;
 import us.monoid.json.JSONException;
 import us.monoid.json.JSONObject;
+import us.monoid.web.Content;
+import us.monoid.web.Resty;
 
 /**
  * APICall: This class is the parent of all API interactions for State and
@@ -27,80 +28,82 @@ import us.monoid.json.JSONObject;
  */
 
 public abstract class APICall {
-    
     // Instance Variables
-    private RestyWrapper    api;
-    private JSONObject      jsonState;
-    private String          endpoint;
-    protected Vehicle       v;
+    private final RestyWrapper  api;
+    private final String        apiName;
+    private JSONObject          jsonResponse;
+
+    protected final Vehicle     v;
     
     //
     // Constructors
     //
     
-    public APICall(Vehicle v, String endpoint) {
-        this(v);
-        this.endpoint = endpoint;
-    }
-    
-    public APICall(Vehicle v) {
+    public APICall(Vehicle v, String apiName) {
         this.v = v;
         this.api = v.getAPI();
-        this.endpoint = null;
-        this.jsonState = new JSONObject();
+        this.jsonResponse = new JSONObject();
+        this.apiName = apiName;
     }
-    
-    protected BaseState setState(boolean valid) { return null; }
     
     //
     // Updating the endpoint and refreshing the state
     //
     
-    public final boolean setAndRefresh(String newEndpoint) {
-        setEndpoint(newEndpoint);
-        return refresh();
-    }
+    public boolean getState(String state) { return call(state, null); }
     
-    public boolean refresh() {
-        try {
-            if (endpoint != null) {
-                setJSONState(api.json(endpoint).object());
-                setState(true);
-            }
-            return true;
-        } catch (IOException | JSONException ex) {
-            Tesla.logger.log(Level.FINEST, "Failed refreshing. HANDLED.", ex);
-            jsonState = new JSONObject();
-            setState(false);
+    public boolean invokeCommand(String command) { return invokeCommand(command, "{}"); }
+        
+    public boolean invokeCommand(String command, String payload) {
+        try {   
+            return call(command, Resty.content(new JSONObject(payload)));
+        } catch (JSONException ex) {
+            Tesla.logger.severe("JSON Syntax Error: " + payload);
             return false;
         }
     }
     
-    public JSONObject getRawResult() { return this.jsonState; }
+    private boolean call(String command, Content payload) {
+        try {
+            JSONObject response;
+            if (payload == null)
+                response = api.json(command).object().getJSONObject("response");
+            else
+                response = api.json(command, payload).object().getJSONObject("response");
+            setJSONState(response);
+            return true;
+        } catch (IOException | JSONException ex) {
+            Tesla.logger.warning("Failed invoking (" + apiName + "): " + ex);
+            jsonResponse = new JSONObject();
+            return false;
+        }
+    }
+    
+    
+    public JSONObject getRawResult() { return this.jsonResponse; }
     
     protected void setJSONState(JSONObject newState) {
-        this.jsonState = newState;
+        this.jsonResponse = newState;
     }
 
-    private void setEndpoint(String newEndpoint) { this.endpoint = newEndpoint; }
-
-    public String getStateName() { return "State"; }
     public Vehicle getVehicle() { return v; }
+    public String getAPIName() { return apiName; }
+    
     //
     // Field Accessor Methods
     //
     
-    public String   getString(String key)  { return jsonState.optString(key);  }
-    public boolean  getBoolean(String key) { return jsonState.optBoolean(key); }
-    public double   getDouble(String key)  { return jsonState.optDouble(key);  }
-    public int      getInteger(String key) { return jsonState.optInt(key);     }
-    public long     getLong(String key)    { return jsonState.optLong(key);    }
+    public String   getString(String key)  { return jsonResponse.optString(key);  }
+    public boolean  getBoolean(String key) { return jsonResponse.optBoolean(key); }
+    public double   getDouble(String key)  { return jsonResponse.optDouble(key);  }
+    public int      getInteger(String key) { return jsonResponse.optInt(key);     }
+    public long     getLong(String key)    { return jsonResponse.optLong(key);    }
     
-    public String   getString(Enum<?> key) { return jsonState.optString(key.name()); }
-    public boolean  getBoolean(Enum<?> key) { return jsonState.optBoolean(key.name());}
-    public double   getDouble(Enum<?> key)  { return jsonState.optDouble(key.name()); }
-    public int      getInteger(Enum<?> key) { return jsonState.optInt(key.name()); }
-    public long     getLong(Enum<?> key)    { return jsonState.optLong(key.name());}
+    public String   getString(Enum<?> key)  { return jsonResponse.optString(key.name()); }
+    public boolean  getBoolean(Enum<?> key) { return jsonResponse.optBoolean(key.name());}
+    public double   getDouble(Enum<?> key)  { return jsonResponse.optDouble(key.name()); }
+    public int      getInteger(Enum<?> key) { return jsonResponse.optInt(key.name()); }
+    public long     getLong(Enum<?> key)    { return jsonResponse.optLong(key.name());}
 
     
     //
@@ -109,9 +112,9 @@ public abstract class APICall {
     
     @Override public String toString() { 
         try {
-            return jsonState.toString(4);
+            return jsonResponse.toString(4);
         } catch (JSONException ex) {
-            return jsonState.toString();
+            return jsonResponse.toString();
         }
     }
     

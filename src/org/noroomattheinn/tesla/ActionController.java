@@ -14,20 +14,21 @@ package org.noroomattheinn.tesla;
  */
 public class ActionController extends APICall {
     // Instance Variables - These are effectively constants
-    private final String honkCommand;         // honk_horn
-    private final String flashLightsCommand;  // flash_lights
-    private final String wakeupCommand;       // wake_up
-    
+    private final String honkCommand;
+    private final String flashLightsCommand;
+    private final String wakeupCommand;
+    private final String remoteStartCommand;
     
     //
     // Constructors
     //
     
     public ActionController(Vehicle v) {
-        super(v);
-        honkCommand = Tesla.command(v.getVID(), "honk_horn");
-        flashLightsCommand = Tesla.command(v.getVID(), "flash_lights");
-        wakeupCommand = Tesla.command(v.getVID(), "wake_up");
+        super(v, "ActionController");
+        honkCommand = Tesla.vehicleCommand(v.getVID(), "honk_horn");
+        flashLightsCommand = Tesla.vehicleCommand(v.getVID(), "flash_lights");
+        remoteStartCommand = Tesla.vehicleCommand(v.getVID(), "remote_start_drive");
+        wakeupCommand = Tesla.vehicleSpecific(v.getVID(), "wake_up");
     }
 
     
@@ -36,17 +37,22 @@ public class ActionController extends APICall {
     //
     
     public Result honk() {
-        setAndRefresh(honkCommand);
+        invokeCommand(honkCommand);
         return new Result(this);
     }
 
     public Result flashLights() {
-        setAndRefresh(flashLightsCommand);
+        invokeCommand(flashLightsCommand);
+        return new Result(this);
+    }
+
+    public Result remoteStart(String password) {
+        invokeCommand(remoteStartCommand, "{'password' : '" + password + "'}");
         return new Result(this);
     }
 
     public Result wakeUp() {
-        setAndRefresh(wakeupCommand);
+        invokeCommand(wakeupCommand);
         return new Result(this);
     }
 
