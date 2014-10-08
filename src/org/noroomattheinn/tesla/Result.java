@@ -6,6 +6,8 @@
 
 package org.noroomattheinn.tesla;
 
+import us.monoid.json.JSONObject;
+
 /**
  * Result: Many of the REST calls result in the following snippet of JSON:
  * <code>{reason:String, result:boolean}</code>. This class takes a JSONResult
@@ -16,17 +18,29 @@ package org.noroomattheinn.tesla;
  */
 
 public class Result {
-    // Instance Variables
-    public boolean success;
-    public String explanation;
+/*------------------------------------------------------------------------------
+ *
+ * Public State
+ * 
+ *----------------------------------------------------------------------------*/
+
+    public final boolean success;
+    public final String explanation;
     
-    //
-    // Constructors
-    //
+/*==============================================================================
+ * -------                                                               -------
+ * -------              Public Interface To This Class                   ------- 
+ * -------                                                               -------
+ *============================================================================*/
     
-    public Result(APICall result) {
-        success = result.getBoolean("result");
-        explanation = result.getString("reason");
+    public Result(JSONObject response) {
+        if (response == null) {
+            success = false;
+            explanation = "";
+        } else {
+            success = response.optBoolean("result", false);
+            explanation = response.optString("reason");
+        }
     }
     
     public Result(boolean success, String explanation) {

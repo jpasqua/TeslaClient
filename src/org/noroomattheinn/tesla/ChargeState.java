@@ -7,6 +7,7 @@
 package org.noroomattheinn.tesla;
 
 import org.noroomattheinn.utils.Utils;
+import us.monoid.json.JSONObject;
 
 /**
  * ChargeState: Retrieve the charging state of the vehicle.
@@ -17,123 +18,121 @@ import org.noroomattheinn.utils.Utils;
  * @author Joe Pasqua <joe at NoRoomAtTheInn dot org>
  */
 
-public class ChargeState extends StateAPI {
-    
-    public State state;
-    
-    //
-    // Constructors
-    //
-    
-    public ChargeState(Vehicle v) {
-        super(v, Tesla.vehicleData(v.getVID(), "charge_state"), "Charge State");
-    }
-
-    @Override protected void setState(boolean valid) {
-        state = valid ? new State(this) : null;
-    }
-    
-    //
-    // Nested Classes
-    //
-    
+public class ChargeState extends BaseState {
+/*------------------------------------------------------------------------------
+ *
+ * Constants and Enums
+ * 
+ *----------------------------------------------------------------------------*/
     public enum Status {Complete, Charging, Disconnected, Stopped, NoPower, Starting, Unknown};
+    
+/*------------------------------------------------------------------------------
+ *
+ * Public State
+ * 
+ *----------------------------------------------------------------------------*/
+    public final boolean  chargeToMaxRange;
+    public final int      maxRangeCharges;
+    public final double   range;
+    public final double   estimatedRange;
+    public final double   idealRange;
+    public final int      batteryPercent;
+    public final double   batteryCurrent;
+    public final int      chargerVoltage;
+    public final double   timeToFullCharge;
+    public final double   chargeRate;
+    public final boolean  chargePortOpen;
+    public final boolean  scheduledChargePending;
+    public final long     scheduledStart;
+    public final int      chargerPilotCurrent;
+    public final int      chargerActualCurrent;
+    public final boolean  fastChargerPresent;
+    public final int      chargerPower;
+    public final ChargeState.Status   chargingState;
 
-    public static class State extends BaseState {
-        public boolean  chargeToMaxRange;
-        public int      maxRangeCharges;
-        public double   range;
-        public double   estimatedRange;
-        public double   idealRange;
-        public int      batteryPercent;
-        public double   batteryCurrent;
-        public int      chargerVoltage;
-        public double   timeToFullCharge;
-        public double   chargeRate;
-        public boolean  chargePortOpen;
-        public boolean  scheduledChargePending;
-        public long     scheduledStart;
-        public int      chargerPilotCurrent;
-        public int      chargerActualCurrent;
-        public boolean  fastChargerPresent;
-        public int      chargerPower;
-        public Status   chargingState;
+    public final boolean  batteryHeaterOn;
+    public final boolean  notEnoughPowerToHeat;
+    public final String   fastChargerType;
+    public final int      usableBatteryLevel;
+    public final double   energyAdded;
+    public final double   ratedMilesAdded;
+    public final double   idealMilesAdded;
+    public final boolean  chargeEnableRequest;
 
-        public boolean  batteryHeaterOn;
-        public boolean  notEnoughPowerToHeat;
-        public String   fastChargerType;
-        public int      usableBatteryLevel;
-        public double   energyAdded;
-        public double   ratedMilesAdded;
-        public double   idealMilesAdded;
-        public boolean  chargeEnableRequest;
-        
-        // The following calls aren't well defined in terms of what type and values 
+    // The following fields aren't well defined in terms of what type and values 
+    // they return. We're leaving them as String for now
+    public final String   chargeStartingRange;
+    public final String   chargeStartingSOC;
+    public final String   scheduledChargeStartTime;
+    public final String   userChargeEnableRequest;
+
+    public final int      chargeLimitSOC;
+    public final int      chargeLimitSOCMax;
+    public final int      chargeLimitSOCMin;
+    public final int      chargeLimitSOCStd;
+
+    public final boolean  euVehicle;
+    public final int      chargerPhases;
+    
+/*==============================================================================
+ * -------                                                               -------
+ * -------              Public Interface To This Class                   ------- 
+ * -------                                                               -------
+ *============================================================================*/
+    
+    public ChargeState(JSONObject source) {
+        super(source);
+        chargeToMaxRange =  source.optBoolean("charge_to_max_range"); 
+        maxRangeCharges =  source.optInt("max_range_charge_counter"); 
+        range =  source.optDouble("battery_range"); 
+        estimatedRange =  source.optDouble("est_battery_range"); 
+        idealRange =  source.optDouble("ideal_battery_range"); 
+        batteryPercent =  source.optInt("battery_level"); 
+        batteryCurrent =  source.optDouble("battery_current"); 
+        chargerVoltage =  source.optInt("charger_voltage"); 
+        timeToFullCharge =  source.optDouble("time_to_full_charge"); 
+        chargeRate =  source.optDouble("charge_rate"); 
+        chargePortOpen =  source.optBoolean("charge_port_door_open"); 
+        scheduledChargePending = source.optBoolean("scheduled_charging_pending"); 
+        scheduledStart =  source.optLong("scheduled_charging_start_time");
+        chargerPilotCurrent =  source.optInt("charger_pilot_current", -1);
+        chargerActualCurrent =  source.optInt("charger_actual_current"); 
+        fastChargerPresent =  source.optBoolean("fast_charger_present"); 
+        chargerPower =  source.optInt("charger_power"); 
+        chargingState =  Utils.stringToEnum(ChargeState.Status.class, source.optString("charging_state"));
+        if (chargingState == ChargeState.Status.Unknown && valid)
+            Tesla.logger.info("Raw charge state: " + source.toString());
+
+        // The following fields aren't well defined in terms of what type and values 
         // they return. We're leaving them as String for now
-        public String   chargeStartingRange;
-        public String   chargeStartingSOC;
-        public String   scheduledChargeStartTime;
-        public String   UserChargeEnableRequest;
+        chargeStartingRange =  source.optString("charge_starting_range"); 
+        chargeStartingSOC =  source.optString("charge_starting_soc"); 
+        scheduledChargeStartTime =  source.optString("scheduled_charging_start_time"); 
+        userChargeEnableRequest =  source.optString("user_charge_enable_request"); 
 
-        public int      chargeLimitSOC;
-        public int      chargeLimitSOCMax;
-        public int      chargeLimitSOCMin;
-        public int      chargeLimitSOCStd;
-        
-        public boolean  euVehicle;
-        public int      chargerPhases;
-        
-        public State(ChargeState cs) {
-            chargeToMaxRange =  cs.getBoolean("charge_to_max_range"); 
-            maxRangeCharges =  cs.getInteger("max_range_charge_counter"); 
-            range =  cs.getDouble("battery_range"); 
-            estimatedRange =  cs.getDouble("est_battery_range"); 
-            idealRange =  cs.getDouble("ideal_battery_range"); 
-            batteryPercent =  cs.getInteger("battery_level"); 
-            batteryCurrent =  cs.getDouble("battery_current"); 
-            chargerVoltage =  cs.getInteger("charger_voltage"); 
-            timeToFullCharge =  cs.getDouble("time_to_full_charge"); 
-            chargeRate =  cs.getDouble("charge_rate"); 
-            chargePortOpen =  cs.getBoolean("charge_port_door_open"); 
-            scheduledChargePending = cs.getBoolean("scheduled_charging_pending"); 
-            scheduledStart =  cs.getLong("scheduled_charging_start_time");
-            try {
-                chargerPilotCurrent =  cs.getRawResult().getInt("charger_pilot_current");
-            } catch (Exception e) {
-                chargerPilotCurrent = -1;
-                Tesla.logger.finest("Pilot Current is null");
-            }
-            chargerActualCurrent =  cs.getInteger("charger_actual_current"); 
-            fastChargerPresent =  cs.getBoolean("fast_charger_present"); 
-            chargerPower =  cs.getInteger("charger_power"); 
-            chargingState =  Utils.stringToEnum(Status.class, cs.getString("charging_state"));
-            if (chargingState == Status.Unknown)
-                Tesla.logger.info("Raw charge state: " + cs.toString());
+        chargeLimitSOC =  source.optInt("charge_limit_soc"); 
+        chargeLimitSOCMax =  source.optInt("charge_limit_soc_max"); 
+        chargeLimitSOCMin =  source.optInt("charge_limit_soc_min"); 
+        chargeLimitSOCStd =  source.optInt("charge_limit_soc_std"); 
 
-            // The following fields aren't well defined in terms of what type and values 
-            // they return. We're leaving them as String for now
-            chargeStartingRange =  cs.getString("charge_starting_range"); 
-            chargeStartingSOC =  cs.getString("charge_starting_soc"); 
-            scheduledChargeStartTime =  cs.getString("scheduled_charging_start_time"); 
-            UserChargeEnableRequest =  cs.getString("user_charge_enable_request"); 
+        euVehicle = source.optBoolean("eu_vehicle");
+        chargerPhases = source.optInt("charger_phases");
 
-            chargeLimitSOC =  cs.getInteger("charge_limit_soc"); 
-            chargeLimitSOCMax =  cs.getInteger("charge_limit_soc_max"); 
-            chargeLimitSOCMin =  cs.getInteger("charge_limit_soc_min"); 
-            chargeLimitSOCStd =  cs.getInteger("charge_limit_soc_std"); 
-            
-            euVehicle = cs.getBoolean("eu_vehicle");
-            chargerPhases = cs.getInteger("charger_phases");
-            
-            batteryHeaterOn = cs.getBoolean("battery_heater_on");
-            notEnoughPowerToHeat = cs.getBoolean("not_enough_power_to_heat");
-            fastChargerType = cs.getString("fast_charger_type");
-            usableBatteryLevel =  cs.getInteger("usable_battery_level"); 
-            energyAdded = cs.getDouble("charge_energy_added");
-            ratedMilesAdded = cs.getDouble("charge_miles_added_rated");
-            idealMilesAdded = cs.getDouble("charge_miles_added_ideal");
-            chargeEnableRequest = cs.getBoolean("charge_enable_request");
+        batteryHeaterOn = source.optBoolean("battery_heater_on");
+        notEnoughPowerToHeat = source.optBoolean("not_enough_power_to_heat");
+        fastChargerType = source.optString("fast_charger_type");
+        usableBatteryLevel =  source.optInt("usable_battery_level"); 
+        energyAdded = source.optDouble("charge_energy_added");
+        ratedMilesAdded = source.optDouble("charge_miles_added_rated");
+        idealMilesAdded = source.optDouble("charge_miles_added_ideal");
+        chargeEnableRequest = source.optBoolean("charge_enable_request");
+    }
 
-        }
+    @Override public String toString() {
+        return String.format(
+            "    Estimated, Ideal, Rated: (%3.1f, %3.1f, %3.1f)\n" +
+            "    SOC: %d%%", 
+            estimatedRange, idealRange, range, batteryPercent
+            );
     }
 }

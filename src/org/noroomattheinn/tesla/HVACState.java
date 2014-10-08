@@ -7,32 +7,46 @@
 package org.noroomattheinn.tesla;
 
 import org.noroomattheinn.utils.Utils;
+import us.monoid.json.JSONObject;
 
 /**
- * HVACState: Retrieves the state of the HVAC system.
+ * HVACState: Stores the state of the HVAC system.
  *
  * @author Joe Pasqua <joe at NoRoomAtTheInn dot org>
  */
 
-public class HVACState extends StateAPI {
-
-    public State state;
+public class HVACState extends BaseState {
+/*------------------------------------------------------------------------------
+ *
+ * Public State
+ * 
+ *----------------------------------------------------------------------------*/
+    public final double  insideTemp;
+    public final double  outsideTemp;
+    public final double  driverTemp;
+    public final double  passengerTemp;
+    public final boolean autoConditioning;
+    public final int     isFrontDefrosterOn;
+    public final boolean isRearDefrosterOn;
+    public final int     fanStatus;
     
-    //
-    // Constructor
-    //
+/*==============================================================================
+ * -------                                                               -------
+ * -------              Public Interface To This Class                   ------- 
+ * -------                                                               -------
+ *============================================================================*/
     
-    public HVACState(Vehicle v) {
-        super(v, Tesla.vehicleData(v.getVID(), "climate_state"), "HVAC State");
+    public HVACState(JSONObject source) {
+        super(source);
+        insideTemp = source.optDouble("inside_temp"); 
+        outsideTemp = source.optDouble("outside_temp"); 
+        driverTemp = source.optDouble("driver_temp_setting"); 
+        passengerTemp = source.optDouble("passenger_temp_setting"); 
+        autoConditioning = source.optBoolean("is_auto_conditioning_on"); 
+        isFrontDefrosterOn = source.optInt("is_front_defroster_on"); 
+        isRearDefrosterOn = source.optBoolean("is_rear_defroster_on"); 
+        fanStatus = source.optInt("fan_status"); 
     }
-    
-    @Override protected void setState(boolean valid) {
-        state = valid ? new State(this) : null;
-    }
-
-    //
-    // Override methods
-    //
     
     @Override public String toString() {
         return String.format(
@@ -44,36 +58,15 @@ public class HVACState extends StateAPI {
             "    Front Defroster On: %d\n" +
             "    Rear Defroster On: %s\n" +
             "    Fan Setting: %d\n", 
-            Utils.cToF(state.insideTemp),
-            Utils.cToF(state.outsideTemp),
-            Utils.cToF(state.driverTemp),
-            Utils.cToF(state.passengerTemp),
-            Utils.yesNo(state.autoConditioning),
-            state.isFrontDefrosterOn,
-            Utils.yesNo(state.isRearDefrosterOn),
-            state.fanStatus
+            Utils.cToF(insideTemp),
+            Utils.cToF(outsideTemp),
+            Utils.cToF(driverTemp),
+            Utils.cToF(passengerTemp),
+            Utils.yesNo(autoConditioning),
+            isFrontDefrosterOn,
+            Utils.yesNo(isRearDefrosterOn),
+            fanStatus
             );
     }
     
-    public static class State extends BaseState {
-        public double  insideTemp;
-        public double  outsideTemp;
-        public double  driverTemp;
-        public double  passengerTemp;
-        public boolean autoConditioning;
-        public int     isFrontDefrosterOn;
-        public boolean isRearDefrosterOn;
-        public int     fanStatus;
-    
-        public State(HVACState hvs) {
-            insideTemp = hvs.getDouble("inside_temp"); 
-            outsideTemp = hvs.getDouble("outside_temp"); 
-            driverTemp = hvs.getDouble("driver_temp_setting"); 
-            passengerTemp = hvs.getDouble("passenger_temp_setting"); 
-            autoConditioning = hvs.getBoolean("is_auto_conditioning_on"); 
-            isFrontDefrosterOn = hvs.getInteger("is_front_defroster_on"); 
-            isRearDefrosterOn = hvs.getBoolean("is_rear_defroster_on"); 
-            fanStatus = hvs.getInteger("fan_status"); 
-        }
-    }
 }

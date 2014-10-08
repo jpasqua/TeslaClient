@@ -12,48 +12,55 @@ package org.noroomattheinn.tesla;
  * 
  * @author Joe Pasqua <joe at NoRoomAtTheInn dot org>
  */
-public class ActionController extends APICall {
-    // Instance Variables - These are effectively constants
-    private final String honkCommand;
-    private final String flashLightsCommand;
-    private final String wakeupCommand;
-    private final String remoteStartCommand;
+public class ActionController extends BaseController {
+/*------------------------------------------------------------------------------
+ *
+ * Constants and Enums
+ * 
+ *----------------------------------------------------------------------------*/
+    private final String HonkCommand;
+    private final String FlashLightsCommand;
+    private final String WakeupCommand;
+    private final String RemoteStartCommand;
     
-    //
-    // Constructors
-    //
+/*==============================================================================
+ * -------                                                               -------
+ * -------              Public Interface To This Class                   ------- 
+ * -------                                                               -------
+ *============================================================================*/
     
     public ActionController(Vehicle v) {
         super(v, "ActionController");
-        honkCommand = Tesla.vehicleCommand(v.getVID(), "honk_horn");
-        flashLightsCommand = Tesla.vehicleCommand(v.getVID(), "flash_lights");
-        remoteStartCommand = Tesla.vehicleCommand(v.getVID(), "remote_start_drive");
-        wakeupCommand = Tesla.vehicleSpecific(v.getVID(), "wake_up");
+        HonkCommand = Tesla.vehicleCommand(v.getVID(), "honk_horn");
+        FlashLightsCommand = Tesla.vehicleCommand(v.getVID(), "flash_lights");
+        RemoteStartCommand = Tesla.vehicleCommand(v.getVID(), "remote_start_drive");
+        WakeupCommand = Tesla.vehicleSpecific(v.getVID(), "wake_up");
     }
 
-    
-    //
-    // Action Methods
-    //
+/*------------------------------------------------------------------------------
+ *
+ * Commands on this controller
+ * 
+ *----------------------------------------------------------------------------*/
     
     public Result honk() {
-        invokeCommand(honkCommand);
-        return new Result(this);
+        invokeCommand(HonkCommand);
+        return new Result(response);
     }
 
     public Result flashLights() {
-        invokeCommand(flashLightsCommand);
-        return new Result(this);
+        invokeCommand(FlashLightsCommand);
+        return new Result(response);
     }
 
     public Result remoteStart(String password) {
-        invokeCommand(remoteStartCommand, "{'password' : '" + password + "'}");
-        return new Result(this);
+        invokeCommand(RemoteStartCommand, "{'password' : '" + password + "'}");
+        return new Result(response);
     }
 
     public Result wakeUp() {
-        invokeCommand(wakeupCommand);
-        return new Result(this);
+        invokeCommand(WakeupCommand);
+        return new Result(response);
     }
 
 }

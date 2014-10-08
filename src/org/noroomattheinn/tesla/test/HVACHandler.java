@@ -29,7 +29,6 @@ public class HVACHandler extends TeslaHandler  {
     
     HVACHandler(Vehicle v) {
         super(Name, Description, v);
-        state = new HVACState(v);
         controller = new HVACController(v);
         repl.addHandler(new HVACHandler.StartHandler());
         repl.addHandler(new HVACHandler.StopHandler());
@@ -43,18 +42,19 @@ public class HVACHandler extends TeslaHandler  {
     
     class StartHandler extends Handler {
         StartHandler() { super("start", "Start HVAC"); }
-        public boolean execute() { controller.startAC(); return true; }
+        @Override public boolean execute() { controller.startAC(); return true; }
     }
     
     class StopHandler extends Handler {
         StopHandler() { super("stop", "Stop HVAC"); }
-        public boolean execute() { controller.stopAC(); return true; }
+        @Override public boolean execute() { controller.stopAC(); return true; }
     }
     
     class DisplayHandler extends Handler {
         DisplayHandler() { super("display", "Display HVAC state", "d"); }
-        public boolean execute() {
-            if (state.refresh())
+        @Override public boolean execute() {
+            state = vehicle.queryHVAC();
+            if (state.valid)
                 System.out.format("HVAC State:\n%s\n", state);
             else
                 System.err.println("Problem communicating with Tesla");
@@ -64,7 +64,7 @@ public class HVACHandler extends TeslaHandler  {
     
     class TemperatureHandler extends Handler {
         TemperatureHandler() { super("temp", "Set the temperature", "t"); }
-        public boolean execute() {
+        @Override public boolean execute() {
             //float temp = (float)CLUtils.getNumberInRange("Temp (F)", 65.0, 75.0);
             //controller.setTempF(temp, temp);
             float temp = (float)CLUtils.getNumberInRange("Temp (C)", 17.0, 22.0);

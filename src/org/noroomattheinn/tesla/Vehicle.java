@@ -8,16 +8,15 @@ package org.noroomattheinn.tesla;
 
 import java.io.IOException;
 import java.util.logging.Level;
-import org.noroomattheinn.utils.RestyWrapper;
 import us.monoid.json.JSONArray;
 import us.monoid.json.JSONException;
 import us.monoid.json.JSONObject;
 import us.monoid.web.JSONResource;
 
 /**
- * Vehicle: This object represents a single Tesla Vehicle. All access to
- * the vehicle state and actions is performed via the vehicleID contained
- * in this object.
+ * Vehicle: This object represents a single Tesla Vehicle. It provides information
+ * describing the vehicle and provides query calls to get the current state
+ * of various types/
  * <P>
  * A good running description of the overall Tesla REST API is given in this 
  * <a href="http://goo.gl/Z1Lul" target="_blank">Google Doc</a>. More notes and
@@ -28,43 +27,61 @@ import us.monoid.web.JSONResource;
  */
 
 public class Vehicle {
-    // Instance variables for the context in which this object was created
-    private Tesla   tesla;
-    private RestyWrapper   api;
-
-    // Instance variables that describe a Vehicle
-    private String      UNKNOWN_color;
-    private String      UNKNOWN_display_name;
-    private String      streamingVID;
-    private String      userID;
-    private String      vehicleID;
-    private String      vin;
-    private String      streamingTokens[];
-    private String      status;
-    private Options     options;
-    private String      baseValues;
-    private String      displayName;
-    private boolean     remoteStartEnabled;
-    private boolean     notificationsEnabled;
-    private boolean     calendarEnabled;
+/*------------------------------------------------------------------------------
+ *
+ * Constants and Enums
+ * 
+ *----------------------------------------------------------------------------*/
+    public static enum StateType {Charge, Drive, GUI, HVAC, Vehicle};
     
-    //
-    // Constructors
-    //
+    // The following are effectively constants, but are set in the constructor
+    private final String    ChargeEndpoint;
+    private final String    DriveEndpoint;
+    private final String    GUIEndpoint;
+    private final String    HVACEndpoint;
+    private final String    VehicleStateEndpoint;
+
+/*------------------------------------------------------------------------------
+ *
+ * Internal State
+ * 
+ *----------------------------------------------------------------------------*/
+    private final Tesla         tesla;
+    private final Streamer      streamer;
+
+    // Instance variables that describe the Vehicle
+    private final String        color;
+    private final String        streamingVID;
+    private final String        userID;
+    private final String        vehicleID;
+    private final String        vin;
+    private final String        streamingTokens[];
+    private final String        status;
+    private final Options       options;
+    private final String        baseValues;
+    private final String        displayName;
+    private final boolean       remoteStartEnabled;
+    private final boolean       notificationsEnabled;
+    private final boolean       calendarEnabled;
+    
+
+/*==============================================================================
+ * -------                                                               -------
+ * -------              Public Interface To This Class                   ------- 
+ * -------                                                               -------
+ *============================================================================*/
     
     public Vehicle(Tesla tesla, JSONObject description) {
         this.tesla = tesla;
-        this.api = tesla.getAPI();
         this.baseValues = description.toString();
         
-        UNKNOWN_color = "UNKNOWN";
-        UNKNOWN_display_name = "UNKNOWN";
+        color = description.optString("color");
+        displayName = description.optString("display_name");
         vehicleID = description.optString("id");
         userID = description.optString("user_id");
         streamingVID = description.optString("vehicle_id");
         vin = description.optString("vin");
         status = description.optString("state");
-        displayName = description.optString("display_name");
         remoteStartEnabled = description.optBoolean("remote_start_enabled");
         notificationsEnabled = description.optBoolean("notifications_enabled");
         calendarEnabled = description.optBoolean("calendar_enabled");
@@ -83,17 +100,27 @@ public class Vehicle {
                 
         // Handle the Options
         options = new Options(description.optString("option_codes"));
+        streamer = new Streamer(this);
+        
+        // Initialize state endpoints
+        ChargeEndpoint = Tesla.vehicleData(vehicleID, "charge_state");
+        DriveEndpoint = Tesla.vehicleData(vehicleID, "drive_state");
+        GUIEndpoint = Tesla.vehicleData(vehicleID, "gui_settings");
+        HVACEndpoint = Tesla.vehicleData(vehicleID, "climate_state");
+        VehicleStateEndpoint = Tesla.vehicleData(vehicleID, "vehicle_state");
     }
     
     
-    //
-    // Field Accessor Methods
-    //
+/*------------------------------------------------------------------------------
+ *
+ * Methods to access basic Vehicle information
+ * 
+ *----------------------------------------------------------------------------*/
     
     public String   getVIN() { return vin; }
     public String   getVID() { return vehicleID; }
     public String   getStreamingVID() { return streamingVID; }
-    public String   status() { return status; }
+    public String   status() { return status; } // Status can be "asleep", "waking", or "online"
     public Options  getOptions() { return options; }
     public String   getStreamingToken() { return streamingTokens[0]; }
     public String   getDisplayName() { return displayName; }
@@ -101,30 +128,58 @@ public class Vehicle {
     public boolean  notificationsEnabled() { return notificationsEnabled; }
     public boolean  calendarEnabled() { return calendarEnabled; }
     public String   getUnderlyingValues() { return baseValues; }
+    public boolean  isAwake() { return tesla.isCarAwake(this); }
+    public boolean  isAsleep() { return !isAwake(); }
     public boolean  mobileEnabled() {
-        try {
-            JSONResource resource = api.json(Tesla.vehicleSpecific(vehicleID, "mobile_enabled"));
-            return resource.object().getBoolean("result");
-        } catch (IOException | JSONException e) {
-            return false;
+        JSONObject r = tesla.getState(Tesla.vehicleSpecific(vehicleID, "mobile_enabled"));
+        return r.optBoolean("reponse", false);
+    }
+
+/*------------------------------------------------------------------------------
+ *
+ * Methods to query various types of Vehicle state
+ * 
+ *----------------------------------------------------------------------------*/
+    
+    public BaseState query(StateType which) {
+        switch (which) {
+            case Charge: return queryCharge();
+            case Drive: return queryDrive();
+            case GUI: return queryGUI();
+            case HVAC: return queryHVAC();
+            case Vehicle: return queryVehicle();
+            default:
+                Tesla.logger.severe("Unexpected query type: " + which);
+                return null;
         }
     }
     
+    public ChargeState queryCharge() {
+        return new ChargeState(tesla.getState(ChargeEndpoint));
+    }
+    public DriveState queryDrive() {
+        return new DriveState(tesla.getState(DriveEndpoint));
+    }
+    public GUIState queryGUI() {
+        return new GUIState(tesla.getState(GUIEndpoint));
+    }
+    public HVACState queryHVAC() {
+        return new HVACState(tesla.getState(HVACEndpoint));
+    }
+    public VehicleState queryVehicle() {
+        return new VehicleState(tesla.getState(VehicleStateEndpoint));
+    }
+    public Streamer getStreamer() { return streamer; }
+
+/*------------------------------------------------------------------------------
+ *
+ * Utility Methods
+ * 
+ *----------------------------------------------------------------------------*/
     
-    //
-    // Methods to get context
-    //
+    public Tesla tesla() { return tesla; }
     
-    public RestyWrapper getAPI() { return api; }
-    public Tesla getContext() { return tesla; }
-    public boolean isAwake() { return tesla.isCarAwake(this); }
-    public final boolean isAsleep() { return !isAwake(); }
-    //
-    // Override methods
-    //
-    
-    @Override
-    public String toString() {
+    @Override public String toString() {
         return String.format(
                 "VIN: %s\n" +
                 "status: %s\n" +

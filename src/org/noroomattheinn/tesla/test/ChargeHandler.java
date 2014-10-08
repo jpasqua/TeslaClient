@@ -29,7 +29,6 @@ public class ChargeHandler extends TeslaHandler  {
 
     ChargeHandler(Vehicle v) {
         super(Name, Description, v);
-        state = new ChargeState(vehicle);
         controller = new ChargeController(vehicle);
         repl.addHandler(new StartHandler());
         repl.addHandler(new StopHandler());
@@ -44,18 +43,19 @@ public class ChargeHandler extends TeslaHandler  {
     
     class StartHandler extends Handler {
         StartHandler() { super("start", "Start Charging"); }
-        public boolean execute() { controller.startCharing(); return true; }
+        @Override public boolean execute() { controller.startCharing(); return true; }
     }
     
     class StopHandler extends Handler {
         StopHandler() { super("stop", "Stop Charging"); }
-        public boolean execute() { controller.stopCharing(); return true; }
+        @Override public boolean execute() { controller.stopCharing(); return true; }
     }
     
     class DisplayHandler extends Handler {
         DisplayHandler() { super("display", "Display Charge State", "d"); }
-        public boolean execute() {
-            if (state.refresh())
+        @Override public boolean execute() {
+            state = vehicle.queryCharge();
+            if (state.valid)
                 System.out.format("Charge State:\n%s\n", state);
             else
                 System.err.println("Problem communicating with Tesla");            
@@ -65,7 +65,7 @@ public class ChargeHandler extends TeslaHandler  {
     
     class PercentHandler extends Handler {
         PercentHandler() { super("percent", "Set Charge Percent", "%"); }
-        public boolean execute() {
+        @Override public boolean execute() {
             int percent = (int)CLUtils.getNumberInRange("Charge Percent", 0, 100);
             controller.setChargePercent(percent);
             return true;
@@ -74,7 +74,7 @@ public class ChargeHandler extends TeslaHandler  {
     
     class TargetHandler extends Handler {
         TargetHandler() { super("target", "Set the charge target (max or std)"); }
-        public boolean execute() {
+        @Override public boolean execute() {
             String[] options = {"max", "std"};
             String target = CLUtils.chooseOption("Target charge", options);
             controller.setChargeRange(target.equalsIgnoreCase("max"));

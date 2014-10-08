@@ -6,42 +6,50 @@
 
 package org.noroomattheinn.tesla;
 
+import us.monoid.json.JSONObject;
+
 /**
- * GUIState: Retrieve the parameters that describe the units used in the GUI.
+ * GUIState: Stores the parameters that describe the units used in the GUI.
  * For example, it indicates whether speed is to be shown as mi/hr or kph.
  *
  * @author Joe Pasqua <joe at NoRoomAtTheInn dot org>
  */
 
-public class GUIState extends StateAPI {
+public class GUIState extends BaseState {
+/*------------------------------------------------------------------------------
+ *
+ * Public State
+ * 
+ *----------------------------------------------------------------------------*/
+    public final String distanceUnits;
+    public final String temperatureUnits;
+    public final String chargeRateUnits;
+    public final boolean use24HrTime;
+    public final String rangeDisplay;
     
-    public State state;
+/*==============================================================================
+ * -------                                                               -------
+ * -------              Public Interface To This Class                   ------- 
+ * -------                                                               -------
+ *============================================================================*/
     
-    //
-    // Constructors
-    //
-    
-    public GUIState(Vehicle v) {
-        super(v, Tesla.vehicleData(v.getVID(), "gui_settings"), "GUI State");
+    public GUIState(JSONObject source) {
+        super(source);
+        distanceUnits = source.optString("gui_distance_units"); 
+        temperatureUnits = source.optString("gui_temperature_units"); 
+        chargeRateUnits = source.optString("gui_charge_rate_units"); 
+        use24HrTime = source.optBoolean("gui_24_hour_time"); 
+        rangeDisplay = source.optString("gui_range_display"); 
     }
     
-    @Override protected void setState(boolean valid) {
-        state = valid ? new State(this) : null;
-    }
-    
-    public static class State extends BaseState {
-        public String distanceUnits;
-        public String temperatureUnits;
-        public String chargeRateUnits;
-        public boolean use24HrTime;
-        public String rangeDisplay;
-        
-        public State(GUIState gs) {
-            distanceUnits = gs.getString("gui_distance_units"); 
-            temperatureUnits = gs.getString("gui_temperature_units"); 
-            chargeRateUnits = gs.getString("gui_charge_rate_units"); 
-            use24HrTime = gs.getBoolean("gui_24_hour_time"); 
-            rangeDisplay = gs.getString("gui_range_display"); 
-        }
+    @Override public String toString() {
+        return String.format(
+            "    Distance Units: %s\n" +
+            "    Temperature Units: %s\n" +
+            "    Charge Rate Units: %s\n" +
+            "    Use 24 Hour Time: %b\n" +
+            "    Range Display: %s\n", 
+            distanceUnits, temperatureUnits, chargeRateUnits,
+            use24HrTime, rangeDisplay);
     }
 }

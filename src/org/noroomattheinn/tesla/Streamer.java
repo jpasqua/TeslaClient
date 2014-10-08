@@ -1,5 +1,5 @@
 /*
- * SnapshotState.java - Copyright(c) 2013 Joe Pasqua
+ * Streamer.java - Copyright(c) 2013 Joe Pasqua
  * Provided under the MIT License. See the LICENSE file for details.
  * Created: Jul 11, 2013
  */
@@ -10,7 +10,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
 import org.apache.commons.codec.binary.Base64;
@@ -22,22 +21,19 @@ import us.monoid.json.JSONObject;
 import us.monoid.web.TextResource;
 
 /**
- * StreamingState: Provides access to streaming information about the current
+ * Streamer: Provides access to streaming information about the current
  * state of the vehicle.
  *
  * @author Joe Pasqua <joe at NoRoomAtTheInn dot org>
  */
 
-public class SnapshotState extends StateAPI {
-    
-    public State state;
-    
+public class Streamer {
 /*------------------------------------------------------------------------------
  *
  * Constants and Enums
  * 
  *----------------------------------------------------------------------------*/
-    private enum Keys {
+    public enum Keys {
         timestamp, odometer, speed, soc, elevation, est_heading,
         est_lat, est_lng, power, shift_state, range, est_range, heading};
     private final Keys[] keyList = Keys.values();
@@ -58,7 +54,7 @@ public class SnapshotState extends StateAPI {
     
     private Vehicle authenticatedVehicle = null;
     private BufferedReader locationReader = null;
-    
+    private Vehicle v;
     
 /*==============================================================================
  * -------                                                               -------
@@ -66,38 +62,25 @@ public class SnapshotState extends StateAPI {
  * -------                                                               -------
  *============================================================================*/
     
-    @Override protected void setState(boolean valid) {
-        state = valid ? new State(this) : null;
+    public Streamer(Vehicle vehicle) {
+        this.v = vehicle;
     }
-    
-    // Constructors
-    public SnapshotState(Vehicle v) {
-        super(v, "UNUSED", "Snapshot State");
-    }
-    
-
-/*------------------------------------------------------------------------------
- *
- * Methods overridden from APICall
- * 
- *----------------------------------------------------------------------------*/
-    
-    public boolean opportunisticRefresh() {
+        
+    public StreamState opportunisticRefresh() {
         // Just try reading. Maybe we're lucky enough to still be connected
-        if (getFromStream()) return true;
+        StreamState state = getFromStream();
+        if (state != null) return state;
 
         // Well, that didn't work! Get a new reader and try again
         locationReader = refreshReader();
-        if (getFromStream()) return true;
-        
-        return false;
-    }
-    
-    public boolean refreshFromStream() {
         return getFromStream();
     }
     
-    @Override public boolean refresh() {
+    public StreamState refreshFromStream() {
+        return getFromStream();
+    }
+    
+    public StreamState refresh() {
         locationReader = refreshReader();
         return getFromStream();
     }
@@ -105,45 +88,16 @@ public class SnapshotState extends StateAPI {
     
 /*------------------------------------------------------------------------------
  *
- * Methods overridden from Object
- * 
- *----------------------------------------------------------------------------*/
-    
-    
-    @Override public String toString() {
-        if (state == null) return "[ ]";
-        return String.format(
-                "Time Stamp: %s (%s)\n" +
-                "Speed: %3.1f\n" +
-                "Location: [(Lat: %f, Lng: %3f), Heading: %d, Elevation: %d]\n" +
-                "Charge Info: [SoC: %d, Power: %d]\n" +
-                "Odometer: %7.1f\n" +
-                "Range: %d\n",
-                state.vehicleTimestamp, new Date(state.vehicleTimestamp),
-                state.speed,
-                state.estLat, state.estLng, state.estHeading, state.elevation,
-                state.soc, state.power,
-                state.odometer, state.range
-                // Don't know what shift_state is! Always seems to be null
-                );
-    }
-    
-/*------------------------------------------------------------------------------
- *
- * Methods for setting up the Streaming connection and reading the data
+ * Private methods for setting up the Streaming connection and reading the data
  * 
  *----------------------------------------------------------------------------*/
 
-    private boolean getFromStream () {
+    private StreamState getFromStream () {
         JSONObject val = produce();
         if (val == null) {
-            state = null;
-            return false;
+            return null;
         }
-        setJSONState(val);
-        state = new State(this);
-        state.timestamp = System.currentTimeMillis();
-        return true;
+        return new StreamState(val);
     }
     
     private BufferedReader refreshReader() {
@@ -208,13 +162,13 @@ public class SnapshotState extends StateAPI {
                     if (authenticatedVehicle == null) break;
                     rw = getAuthAPI(authenticatedVehicle);
                 } else {
-                    Tesla.logger.warning("Snapshot GET failed: " + e);
+                    Tesla.logger.warning("Stream GET failed: " + e);
                 }
             }
             Utils.sleep(500);
         }
         
-        Tesla.logger.warning("Tried 5 times to establish a Snapshot stream - giving up");
+        Tesla.logger.warning("Tried 5 times to establish a stream - giving up");
         return null;
     }
     
@@ -242,7 +196,7 @@ public class SnapshotState extends StateAPI {
         for (int i = 0; i < WakeupRetries; i++) {
 
             List<Vehicle> vList = new ArrayList<>();
-            v.getContext().fetchVehiclesInto(vList);
+            v.tesla().fetchVehiclesInto(vList);
             for (Vehicle newV : vList) {
                 if (newV.getVID().equals(vid) && newV.getStreamingToken() != null) {
                     authenticatedVehicle = newV;
@@ -268,46 +222,8 @@ public class SnapshotState extends StateAPI {
         // To accomplish that, create a new (temporary) Resty instance and
         // add the auth header to it.
         RestyWrapper api = new RestyWrapper(ReadTimeoutInMillis);
-        setAuthHeader(api, v.getContext().getUsername(), authToken);
+        setAuthHeader(api, v.tesla().getUsername(), authToken);
         return api;
     }
     
-/*------------------------------------------------------------------------------
- *
- * The State object
- * 
- *----------------------------------------------------------------------------*/
-    
-    public static class State extends BaseState {
-        public long   vehicleTimestamp;
-        public double speed;
-        public double odometer;
-        public int    soc;
-        public int    elevation;
-        public int    estHeading;
-        public int    heading;
-        public double estLat;
-        public double estLng;
-        public int    power;
-        public String shiftState;
-        public int    range;
-        public int    estRange;
-        
-        public State(SnapshotState ss) {
-            vehicleTimestamp = ss.getLong(Keys.timestamp);
-            speed = ss.getDouble(Keys.speed);
-            if (Double.isNaN(speed)) speed = 0.0;
-            odometer = ss.getDouble(Keys.odometer);
-            soc = ss.getInteger(Keys.soc);
-            elevation = ss.getInteger(Keys.elevation);
-            estHeading = ss.getInteger(Keys.est_heading);
-            heading = ss.getInteger(Keys.heading);
-            estLat = ss.getDouble(Keys.est_lat);
-            estLng = ss.getDouble(Keys.est_lng);
-            power = ss.getInteger(Keys.power);
-            shiftState = ss.getString(Keys.shift_state);
-            range = ss.getInteger(Keys.range);
-            estRange = ss.getInteger(Keys.est_range);
-        }
-    }
 }
