@@ -6,12 +6,11 @@
 
 package org.noroomattheinn.tesla;
 
-import java.io.IOException;
+import java.util.List;
 import java.util.logging.Level;
 import us.monoid.json.JSONArray;
 import us.monoid.json.JSONException;
 import us.monoid.json.JSONObject;
-import us.monoid.web.JSONResource;
 
 /**
  * Vehicle: This object represents a single Tesla Vehicle. It provides information
@@ -128,11 +127,21 @@ public class Vehicle {
     public boolean  notificationsEnabled() { return notificationsEnabled; }
     public boolean  calendarEnabled() { return calendarEnabled; }
     public String   getUnderlyingValues() { return baseValues; }
-    public boolean  isAwake() { return tesla.isCarAwake(this); }
     public boolean  isAsleep() { return !isAwake(); }
     public boolean  mobileEnabled() {
         JSONObject r = tesla.getState(Tesla.vehicleSpecific(vehicleID, "mobile_enabled"));
         return r.optBoolean("reponse", false);
+    }
+    public boolean isAwake() {
+        List<Vehicle> vehicles = tesla.queryVehicles();
+        if (vehicles != null) {
+            for (Vehicle v : vehicles) {
+                if (vin.equals(v.vin)) {
+                    return !v.status().equals("asleep");
+                }
+            }
+        }
+        return false;
     }
 
 /*------------------------------------------------------------------------------

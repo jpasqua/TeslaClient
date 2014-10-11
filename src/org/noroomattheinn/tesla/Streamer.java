@@ -195,12 +195,13 @@ public class Streamer {
         ActionController a = new ActionController(v);
         for (int i = 0; i < WakeupRetries; i++) {
 
-            List<Vehicle> vList = new ArrayList<>();
-            v.tesla().fetchVehiclesInto(vList);
-            for (Vehicle newV : vList) {
-                if (newV.getVID().equals(vid) && newV.getStreamingToken() != null) {
-                    authenticatedVehicle = newV;
-                    return;
+            List<Vehicle> vList = v.tesla().queryVehicles();
+            if (vList != null) {
+                for (Vehicle newV : vList) {
+                    if (newV.getVID().equals(vid) && newV.getStreamingToken() != null) {
+                        authenticatedVehicle = newV;
+                        return;
+                    }
                 }
             }
             a.wakeUp(); Utils.sleep(500);

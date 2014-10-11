@@ -67,7 +67,7 @@ public class Tesla {
  * 
  *----------------------------------------------------------------------------*/
     private final RestyWrapper api;
-    private final List<Vehicle> vehicles;
+    private List<Vehicle> vehicles;
     private String username;
     private String token;
     
@@ -105,9 +105,8 @@ public class Tesla {
      *          false   No dice, the user must supply credentials
      */
     public boolean connectWithToken(String username, String token) {
-        vehicles.clear();
         api.withHeader("Authorization", "Bearer " + token);
-        if (fetchVehiclesInto(vehicles)) {
+        if ((vehicles = queryVehicles()) != null) {
             this.token = token;
             this.username = username;
             return true;
@@ -151,7 +150,8 @@ public class Tesla {
  * 
  *----------------------------------------------------------------------------*/
     
-    public boolean fetchVehiclesInto(List<Vehicle> list) {
+    public List<Vehicle> queryVehicles() {
+        List<Vehicle> list = new ArrayList<>(2);
         try {
             JSONResource r = api.json(apiEndpoint("vehicles"));
             JSONArray rawVehicleData = r.object().getJSONArray("response");
@@ -162,24 +162,13 @@ public class Tesla {
             }
         } catch (IOException | JSONException ex) {
             logger.warning("Problem fetching vehicle list: " + ex);
-            return false;
+            return null;
         }
-        return true;
+        return list;
     }
 
     public List<Vehicle> getVehicles() { return vehicles; }
 
-    public boolean isCarAwake(Vehicle v) {
-        vehicles.clear();
-        if (fetchVehiclesInto(vehicles)) {
-            for (Vehicle car : vehicles) {
-                if (car.getVIN().equals(v.getVIN())) {
-                    return (!car.status().equals("asleep"));
-                }
-            }
-        }
-        return false;
-    }
 
 /*------------------------------------------------------------------------------
  *
