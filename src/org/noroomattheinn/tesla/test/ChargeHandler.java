@@ -7,7 +7,6 @@
 package org.noroomattheinn.tesla.test;
 
 import org.noroomattheinn.utils.Handler;
-import org.noroomattheinn.tesla.ChargeController;
 import org.noroomattheinn.tesla.ChargeState;
 import org.noroomattheinn.tesla.Vehicle;
 import org.noroomattheinn.utils.CLUtils;
@@ -25,11 +24,9 @@ public class ChargeHandler extends TeslaHandler  {
     
     // Private Instance Variables
     private ChargeState state;
-    private ChargeController controller;
 
     ChargeHandler(Vehicle v) {
         super(Name, Description, v);
-        controller = new ChargeController(vehicle);
         repl.addHandler(new StartHandler());
         repl.addHandler(new StopHandler());
         repl.addHandler(new PercentHandler());
@@ -43,12 +40,12 @@ public class ChargeHandler extends TeslaHandler  {
     
     class StartHandler extends Handler {
         StartHandler() { super("start", "Start Charging"); }
-        @Override public boolean execute() { controller.startCharing(); return true; }
+        @Override public boolean execute() { vehicle.startCharing(); return true; }
     }
     
     class StopHandler extends Handler {
         StopHandler() { super("stop", "Stop Charging"); }
-        @Override public boolean execute() { controller.stopCharing(); return true; }
+        @Override public boolean execute() { vehicle.stopCharing(); return true; }
     }
     
     class DisplayHandler extends Handler {
@@ -67,7 +64,7 @@ public class ChargeHandler extends TeslaHandler  {
         PercentHandler() { super("percent", "Set Charge Percent", "%"); }
         @Override public boolean execute() {
             int percent = (int)CLUtils.getNumberInRange("Charge Percent", 0, 100);
-            controller.setChargePercent(percent);
+            vehicle.setChargePercent(percent);
             return true;
         }
     }
@@ -77,7 +74,7 @@ public class ChargeHandler extends TeslaHandler  {
         @Override public boolean execute() {
             String[] options = {"max", "std"};
             String target = CLUtils.chooseOption("Target charge", options);
-            controller.setChargeRange(target.equalsIgnoreCase("max"));
+            vehicle.setChargeRange(target.equalsIgnoreCase("max"));
             return true;
         }
     }

@@ -9,7 +9,6 @@ package org.noroomattheinn.tesla.test;
 import java.util.List;
 import java.util.logging.Level;
 import org.noroomattheinn.tesla.ChargeState;
-import org.noroomattheinn.tesla.DoorController;
 import org.noroomattheinn.tesla.VehicleState;
 import org.noroomattheinn.tesla.DriveState;
 import org.noroomattheinn.tesla.GUIState;
@@ -74,8 +73,7 @@ public class BasicTest {
                 System.out.format("Vehicle State: %s\n", vs);
             }
             
-            DoorController doorController = new DoorController(vehicle);
-            doorController.setPano(DoorController.PanoCommand.vent);
+            vehicle.setPano(Vehicle.PanoCommand.vent);
             vs = vehicle.queryVehicle();
             if (vs.valid) {
                 System.out.format("Pano Percent: %d\n", vs.panoPercent);

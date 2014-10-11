@@ -7,7 +7,6 @@
 package org.noroomattheinn.tesla.test;
 
 import org.noroomattheinn.utils.Handler;
-import org.noroomattheinn.tesla.HVACController;
 import org.noroomattheinn.tesla.HVACState;
 import org.noroomattheinn.tesla.Vehicle;
 import org.noroomattheinn.utils.CLUtils;
@@ -25,11 +24,9 @@ public class HVACHandler extends TeslaHandler  {
     
     // Private Instance Variables
     private HVACState state;
-    private HVACController controller;
     
     HVACHandler(Vehicle v) {
         super(Name, Description, v);
-        controller = new HVACController(v);
         repl.addHandler(new HVACHandler.StartHandler());
         repl.addHandler(new HVACHandler.StopHandler());
         repl.addHandler(new HVACHandler.TemperatureHandler());
@@ -42,12 +39,12 @@ public class HVACHandler extends TeslaHandler  {
     
     class StartHandler extends Handler {
         StartHandler() { super("start", "Start HVAC"); }
-        @Override public boolean execute() { controller.startAC(); return true; }
+        @Override public boolean execute() { vehicle.startAC(); return true; }
     }
     
     class StopHandler extends Handler {
         StopHandler() { super("stop", "Stop HVAC"); }
-        @Override public boolean execute() { controller.stopAC(); return true; }
+        @Override public boolean execute() { vehicle.stopAC(); return true; }
     }
     
     class DisplayHandler extends Handler {
@@ -68,7 +65,7 @@ public class HVACHandler extends TeslaHandler  {
             //float temp = (float)CLUtils.getNumberInRange("Temp (F)", 65.0, 75.0);
             //controller.setTempF(temp, temp);
             float temp = (float)CLUtils.getNumberInRange("Temp (C)", 17.0, 22.0);
-            controller.setTempC(temp, temp);
+            vehicle.setTempC(temp, temp);
             return true;
         }
     }

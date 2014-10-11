@@ -9,7 +9,6 @@ package org.noroomattheinn.tesla;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import org.apache.commons.codec.binary.Base64;
@@ -192,7 +191,6 @@ public class Streamer {
         // Remember this so we can find the right vehicle when we fetch
         // the updated list of vehicles after doing the wakeup
 
-        ActionController a = new ActionController(v);
         for (int i = 0; i < WakeupRetries; i++) {
 
             List<Vehicle> vList = v.tesla().queryVehicles();
@@ -204,7 +202,7 @@ public class Streamer {
                     }
                 }
             }
-            a.wakeUp(); Utils.sleep(500);
+            v.wakeUp(); Utils.sleep(500);
         }
 
         // For some reason we can't get Streaming tokens. We've tried enough - Give up
