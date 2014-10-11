@@ -16,8 +16,9 @@ import us.monoid.json.JSONObject;
 
 /**
  * Vehicle: This object represents a single Tesla Vehicle. It provides information
- * describing the vehicle and provides query calls to get the current state
- * of various types/
+ * describing the vehicle, provides query calls to get the current state
+ * of various subsystems (eg HVAC), and provides commands to take action on
+ * the vehicle (e.g. unlock the doors).
  * <P>
  * A good running description of the overall Tesla REST API is given in this 
  * <a href="http://goo.gl/Z1Lul" target="_blank">Google Doc</a>. More notes and
@@ -109,36 +110,36 @@ public class Vehicle {
         streamer = new Streamer(this);
         
         // Initialize state endpoints
-        ChargeEndpoint = Tesla.vehicleData(vehicleID, "charge_state");
-        DriveEndpoint = Tesla.vehicleData(vehicleID, "drive_state");
-        GUIEndpoint = Tesla.vehicleData(vehicleID, "gui_settings");
-        HVACEndpoint = Tesla.vehicleData(vehicleID, "climate_state");
-        VehicleStateEndpoint = Tesla.vehicleData(vehicleID, "vehicle_state");
+        ChargeEndpoint = tesla.vehicleData(vehicleID, "charge_state");
+        DriveEndpoint = tesla.vehicleData(vehicleID, "drive_state");
+        GUIEndpoint = tesla.vehicleData(vehicleID, "gui_settings");
+        HVACEndpoint = tesla.vehicleData(vehicleID, "climate_state");
+        VehicleStateEndpoint = tesla.vehicleData(vehicleID, "vehicle_state");
         
         // Initialize HVAC endpoints
-        HVAC_Start = Tesla.vehicleCommand(vehicleID, "auto_conditioning_start");
-        HVAC_Stop = Tesla.vehicleCommand(vehicleID, "auto_conditioning_stop");
-        HVAC_SetTemp = Tesla.vehicleCommand(vehicleID, "set_temps");
+        HVAC_Start = tesla.vehicleCommand(vehicleID, "auto_conditioning_start");
+        HVAC_Stop = tesla.vehicleCommand(vehicleID, "auto_conditioning_stop");
+        HVAC_SetTemp = tesla.vehicleCommand(vehicleID, "set_temps");
         
         // Initialize Charge endpoints
-        Charge_Start = Tesla.vehicleCommand(vehicleID, "charge_start");
-        Charge_Stop = Tesla.vehicleCommand(vehicleID, "charge_stop");
-        Charge_SetMax = Tesla.vehicleCommand(vehicleID, "charge_max_range");
-        Charge_SetStd = Tesla.vehicleCommand(vehicleID, "charge_standard");
-        Charge_SetPct = Tesla.vehicleCommand(vehicleID, "set_charge_limit");
+        Charge_Start = tesla.vehicleCommand(vehicleID, "charge_start");
+        Charge_Stop = tesla.vehicleCommand(vehicleID, "charge_stop");
+        Charge_SetMax = tesla.vehicleCommand(vehicleID, "charge_max_range");
+        Charge_SetStd = tesla.vehicleCommand(vehicleID, "charge_standard");
+        Charge_SetPct = tesla.vehicleCommand(vehicleID, "set_charge_limit");
         
         // Initialize Door endpoints
-        Doors_OpenChargePort = Tesla.vehicleCommand(vehicleID, "charge_port_door_open");
-        Doors_Unlock = Tesla.vehicleCommand(vehicleID, "door_unlock");
-        Doors_Lock = Tesla.vehicleCommand(vehicleID, "door_lock");
-        Doors_Sunroof = Tesla.vehicleCommand(vehicleID, "sun_roof_control");
-        Doors_Trunk = Tesla.vehicleCommand(vehicleID, "trunk_open");
+        Doors_OpenChargePort = tesla.vehicleCommand(vehicleID, "charge_port_door_open");
+        Doors_Unlock = tesla.vehicleCommand(vehicleID, "door_unlock");
+        Doors_Lock = tesla.vehicleCommand(vehicleID, "door_lock");
+        Doors_Sunroof = tesla.vehicleCommand(vehicleID, "sun_roof_control");
+        Doors_Trunk = tesla.vehicleCommand(vehicleID, "trunk_open");
         
         // Initialize Action Endpoints
-        Action_Honk = Tesla.vehicleCommand(vehicleID, "honk_horn");
-        Action_Flash = Tesla.vehicleCommand(vehicleID, "flash_lights");
-        Action_RemoteStart = Tesla.vehicleCommand(vehicleID, "remote_start_drive");
-        Action_Wakeup = Tesla.vehicleSpecific(vehicleID, "wake_up");        
+        Action_Honk = tesla.vehicleCommand(vehicleID, "honk_horn");
+        Action_Flash = tesla.vehicleCommand(vehicleID, "flash_lights");
+        Action_RemoteStart = tesla.vehicleCommand(vehicleID, "remote_start_drive");
+        Action_Wakeup = tesla.vehicleSpecific(vehicleID, "wake_up");        
     }
     
     
@@ -161,16 +162,13 @@ public class Vehicle {
     public String   getUnderlyingValues() { return baseValues; }
     public boolean  isAsleep() { return !isAwake(); }
     public boolean  mobileEnabled() {
-        JSONObject r = tesla.getState(Tesla.vehicleSpecific(vehicleID, "mobile_enabled"));
+        JSONObject r = tesla.getState(tesla.vehicleSpecific(vehicleID, "mobile_enabled"));
         return r.optBoolean("reponse", false);
     }
     public boolean isAwake() {
-        List<Vehicle> vehicles = tesla.queryVehicles();
-        if (vehicles != null) {
-            for (Vehicle v : vehicles) {
-                if (vin.equals(v.vin)) {
-                    return !v.status().equals("asleep");
-                }
+        for (Vehicle v : tesla.queryVehicles()) {
+            if (vin.equals(v.vin)) {
+                return !v.status().equals("asleep");
             }
         }
         return false;

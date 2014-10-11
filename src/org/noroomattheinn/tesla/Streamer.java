@@ -9,7 +9,6 @@ package org.noroomattheinn.tesla;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.List;
 import java.util.logging.Level;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
@@ -51,9 +50,9 @@ public class Streamer {
  * 
  *----------------------------------------------------------------------------*/
     
-    private Vehicle authenticatedVehicle = null;
-    private BufferedReader locationReader = null;
-    private Vehicle v;
+    private Vehicle         authenticatedVehicle = null;
+    private BufferedReader  streamReader = null;
+    private Vehicle         v;
     
 /*==============================================================================
  * -------                                                               -------
@@ -65,54 +64,35 @@ public class Streamer {
         this.v = vehicle;
     }
         
-    public StreamState opportunisticRefresh() {
-        // Just try reading. Maybe we're lucky enough to still be connected
-        StreamState state = getFromStream();
-        if (state != null) return state;
-
-        // Well, that didn't work! Get a new reader and try again
-        locationReader = refreshReader();
-        return getFromStream();
+    public StreamState beginNewStream() {
+        streamReader = establishStreamingConnection();
+        return tryExistingStream();
     }
     
-    public StreamState refreshFromStream() {
-        return getFromStream();
+    public StreamState tryExistingStream() {
+        JSONObject val = produce();
+        return val == null ? null : new StreamState(val);
     }
     
-    public StreamState refresh() {
-        locationReader = refreshReader();
-        return getFromStream();
+    public StreamState beginStreamIfNeeded() {
+        StreamState state = tryExistingStream();
+        if (state == null) { state = beginNewStream(); }
+        return state;
     }
-    
     
 /*------------------------------------------------------------------------------
  *
  * Private methods for setting up the Streaming connection and reading the data
  * 
  *----------------------------------------------------------------------------*/
-
-    private StreamState getFromStream () {
-        JSONObject val = produce();
-        if (val == null) {
-            return null;
-        }
-        return new StreamState(val);
-    }
-    
-    private BufferedReader refreshReader() {
-        // Just try making a connection, maybe we're lucky enough to still be authenticated
-        return establishStreamingConnection();
-    }
     
     private JSONObject produce() {
-        if (locationReader == null) {
-            return null;
-        }
+        if (streamReader == null) { return null; }
         
         try {
-            String line = locationReader.readLine();
-            if (line == null) {
-                locationReader = null;
+            String line = streamReader.readLine();
+            if (line == null) { // Encountered end of stream, shut it down...
+                streamReader = null;
                 return null;
             }
 
@@ -187,19 +167,13 @@ public class Streamer {
 
 
     private void refreshAuthentication() {
-        String vid = v.getVID();
-        // Remember this so we can find the right vehicle when we fetch
-        // the updated list of vehicles after doing the wakeup
+        String vid = v.getVID();    // Remember our VID, we'll use it as a key
 
         for (int i = 0; i < WakeupRetries; i++) {
-
-            List<Vehicle> vList = v.tesla().queryVehicles();
-            if (vList != null) {
-                for (Vehicle newV : vList) {
-                    if (newV.getVID().equals(vid) && newV.getStreamingToken() != null) {
-                        authenticatedVehicle = newV;
-                        return;
-                    }
+            for (Vehicle newV : v.tesla().queryVehicles()) {
+                if (newV.getVID().equals(vid) && newV.getStreamingToken() != null) {
+                    authenticatedVehicle = newV;
+                    return;
                 }
             }
             v.wakeUp(); Utils.sleep(500);

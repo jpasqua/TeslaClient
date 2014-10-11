@@ -28,16 +28,15 @@ import us.monoid.web.JSONResource;
 import us.monoid.web.Resty;
 
 /**
- * Tesla: This class is the starting point for communicating with Tesla's
- * portal for querying and controlling Tesla vehicles.
+ * Tesla: This class represents a connection to Tesla's servers and provides
+ * access to Vehicle objects.
  * <P>
- * The basic sequence of events is:<ol>
+ * The basic pattern of use is:<ol>
  * <li>Create a Tesla object
  * <li>Connect to the Tesla portal by passing login credentials to the
  * connect() method
  * <li>Get a list of Vehicles associated with the account
- * <li>Query and control a vehicle using the State and Controller objects by
- * supplying a Vehicle object
+ * <li>Query and control a vehicle using the Vehicle object
  * </ol>
  *
  * @author Joe Pasqua <joe at NoRoomAtTheInn dot org>
@@ -106,14 +105,16 @@ public class Tesla {
      */
     public boolean connectWithToken(String username, String token) {
         api.withHeader("Authorization", "Bearer " + token);
-        if ((vehicles = queryVehicles()) != null) {
+        vehicles = queryVehicles();
+        if (!vehicles.isEmpty()) {
             this.token = token;
             this.username = username;
             return true;
+        } else {
+            this.token = null;
+            this.username = null;
+            return false;
         }
-        this.token = null;
-        this.username = null;
-        return false;
     }
 
     /*
@@ -162,7 +163,6 @@ public class Tesla {
             }
         } catch (IOException | JSONException ex) {
             logger.warning("Problem fetching vehicle list: " + ex);
-            return null;
         }
         return list;
     }
@@ -172,36 +172,36 @@ public class Tesla {
 
 /*------------------------------------------------------------------------------
  *
- * Methods use to access the Tesla REST API
+ * Package Methods use to access the Tesla REST API
  * 
  *----------------------------------------------------------------------------*/
     
-    public static String rawEndpoint(String name) {
+    String rawEndpoint(String name) {
         return TeslaURI + name;
     }
 
-    public static String apiEndpoint(String name) {
+    String apiEndpoint(String name) {
         return rawEndpoint(APIVersion + name);
     }
 
-    public static String vehicleSpecific(String vid, String name) {
+    String vehicleSpecific(String vid, String name) {
         return apiEndpoint("vehicles/" + vid + "/" + name);
     }
 
-    public static String vehicleCommand(String vid, String name) {
+    String vehicleCommand(String vid, String name) {
         return vehicleSpecific(vid, "command/" + name);
     }
     
-    public static String vehicleData(String vid, String name) {
+    String vehicleData(String vid, String name) {
         return vehicleSpecific(vid, "data_request/" + name);
     }
 
 
-    public JSONObject getState(String state) { return call(state, null); }
+    JSONObject getState(String state) { return call(state, null); }
     
-    public JSONObject invokeCommand(String command) { return invokeCommand(command, "{}"); }
+    JSONObject invokeCommand(String command) { return invokeCommand(command, "{}"); }
         
-    public JSONObject invokeCommand(String command, String payload) {
+    JSONObject invokeCommand(String command, String payload) {
         try {  
             return call(command, Resty.content(new JSONObject(payload)));
         } catch (JSONException ex) {
