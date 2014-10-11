@@ -54,9 +54,9 @@ public class BasicTest {
             System.out.format("Mobile Enabled: %s\n", vehicle.mobileEnabled());
             
             Streamer streamer = vehicle.getStreamer();
-            StreamState ss = streamer.refresh();
+            StreamState ss = streamer.beginNewStream();
             if (ss != null) { System.out.println(ss); }
-//            while ((ss = streamer.refreshFromStream()) != null) {
+//            while ((ss = streamer.tryExistingStream()) != null) {
 //                System.out.println(ss);
 //                Utils.sleep(500);
 //            }
