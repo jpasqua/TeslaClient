@@ -15,6 +15,8 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import us.monoid.json.JSONException;
+import us.monoid.json.JSONObject;
 import us.monoid.web.AbstractContent;
 import us.monoid.web.FormContent;
 import us.monoid.web.JSONResource;
@@ -160,6 +162,24 @@ public class RestyWrapper {
 
         return stats;
     }
+    
+    public static <T> void put(JSONObject jo, String key, T val) {
+        try {
+            jo.put(key, val);
+        } catch (JSONException e) {
+            logger.warning("Assert Can't Happen in put: " + e);
+        }
+    }
+
+    public static JSONObject newJSONObject(String json) {
+        try {
+            return new JSONObject(json);
+        } catch (JSONException e) {
+            logger.warning("Assert Can't Happen in newJSONObject: " + e);
+            return new JSONObject();
+        }
+    }
+    
 /*------------------------------------------------------------------------------
  *
  * PRIVATE - Utility Classes and Methods
