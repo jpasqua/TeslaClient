@@ -10,6 +10,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
 import org.noroomattheinn.utils.RestyWrapper;
@@ -31,6 +32,7 @@ public class Streamer {
  * Constants and Enums
  * 
  *----------------------------------------------------------------------------*/
+    
     public enum Keys {
         timestamp, odometer, speed, soc, elevation, est_heading,
         est_lat, est_lng, power, shift_state, range, est_range, heading};
@@ -78,6 +80,14 @@ public class Streamer {
         StreamState state = tryExistingStream();
         if (state == null) { state = beginNewStream(); }
         return state;
+    }
+    
+    public void forceClose() {
+        if (streamReader != null) try {
+            streamReader.close();
+        } catch (IOException ex) {
+            Tesla.logger.warning("Exception during forceClose: " + ex);
+        }
     }
     
 /*------------------------------------------------------------------------------
