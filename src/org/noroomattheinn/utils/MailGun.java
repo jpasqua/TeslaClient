@@ -7,7 +7,6 @@
 package org.noroomattheinn.utils;
 
 import java.io.IOException;
-import org.apache.commons.codec.binary.Base64;
 import org.noroomattheinn.tesla.Tesla;
 import us.monoid.web.FormContent;
 import us.monoid.web.TextResource;
@@ -47,7 +46,7 @@ public class MailGun {
 
     private void setAuthHeader(RestyWrapper api, String username, String authToken) {
         byte[] authString = (username + ":" + authToken).getBytes();
-        String encodedString = Base64.encodeBase64String(authString);
+        String encodedString = Utils.toB64(authString);
         api.withHeader("Authorization", "Basic " + encodedString);
     }
 }

@@ -16,7 +16,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
-import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
 
 /**
@@ -94,8 +93,8 @@ public class PWUtils {
     }
     
     public String externalRep(byte[] salt, byte[] encPassword) {
-        String extSalt = Base64.encodeBase64String(salt);
-        String extPwd = Base64.encodeBase64String(encPassword);
+        String extSalt = Utils.toB64(salt);
+        String extPwd = Utils.toB64(encPassword);
         return extSalt + "|" + extPwd;
     }
     
@@ -107,8 +106,8 @@ public class PWUtils {
             if (vals.length == 2) {
                 String extSalt = vals[0];
                 String extPwd = vals[1];
-                salt = Base64.decodeBase64(extSalt);
-                pwd = Base64.decodeBase64(extPwd);
+                salt = Utils.fromB64(extSalt);
+                pwd = Utils.fromB64(extPwd);
             }
         }
         List<byte[]> result = new ArrayList<>();

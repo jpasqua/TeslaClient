@@ -10,8 +10,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
 import org.noroomattheinn.utils.RestyWrapper;
 import org.noroomattheinn.utils.Utils;
@@ -171,7 +169,7 @@ public class Streamer {
         
     private void setAuthHeader(RestyWrapper api, String username, String authToken) {
         byte[] authString = (username + ":" + authToken).getBytes();
-        String encodedString = Base64.encodeBase64String(authString);
+        String encodedString = Utils.toB64(authString);
         api.withHeader("Authorization", "Basic " + encodedString);
     }
 
