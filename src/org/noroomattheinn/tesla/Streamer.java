@@ -9,7 +9,8 @@ package org.noroomattheinn.tesla;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.logging.Level;
+import java.net.HttpURLConnection;
+import java.net.URLConnection;
 import org.apache.commons.lang3.StringUtils;
 import org.noroomattheinn.utils.RestyWrapper;
 import org.noroomattheinn.utils.Utils;
@@ -52,6 +53,7 @@ public class Streamer {
     
     private Vehicle         authenticatedVehicle = null;
     private BufferedReader  streamReader = null;
+    private HttpURLConnection  httpConnection = null;
     private Vehicle         v;
     
 /*==============================================================================
@@ -81,10 +83,11 @@ public class Streamer {
     }
     
     public void forceClose() {
-        if (streamReader != null) try {
-            streamReader.close();
-        } catch (IOException ex) {
-            Tesla.logger.warning("Exception during forceClose: " + ex);
+        if (httpConnection != null) {
+            Tesla.logger.info("Forcing shutdown");
+            httpConnection.disconnect();
+            httpConnection = null;
+            Tesla.logger.info("Shutdown complete");
         }
     }
     
@@ -97,28 +100,25 @@ public class Streamer {
     private JSONObject produce() {
         if (streamReader == null) { return null; }
         
-        try {
-            String line = streamReader.readLine();
-            if (line == null) { // Encountered end of stream, shut it down...
-                streamReader = null;
-                return null;
-            }
-
-            JSONObject jo = new JSONObject();
-            String vals[] = line.split(",");
-            for (int i = 0; i < keyList.length; i++) {
-                try {
-                    jo.put(keyList[i], vals[i]);
-                } catch (JSONException ex) {
-                    Tesla.logger.log(Level.SEVERE, "Malformed data", ex);
-                    return null;
-                }
-            }
-            return jo;
-        } catch (IOException ex) {
-            Tesla.logger.log(Level.FINEST, "Timeouts are expected here...", ex);
+        String line = null;
+        try { line = streamReader.readLine(); } catch (IOException ex) { }
+        if (line == null) { // End of stream or timeout, shut it down...
+            streamReader = null;
+            httpConnection = null;
             return null;
         }
+
+        JSONObject jo = new JSONObject();
+        String vals[] = line.split(",");
+        for (int i = 0; i < keyList.length; i++) {
+            try {
+                jo.put(keyList[i], vals[i]);
+            } catch (JSONException ex) {
+                Tesla.logger.severe("Malformed data: " + ex);
+                return null;
+            }
+        }
+        return jo;
     }
 
     private BufferedReader establishStreamingConnection() {
@@ -139,12 +139,15 @@ public class Streamer {
             try {
                 TextResource r = rw.text(endpoint);
                 if (r.status(200)) {
+                    URLConnection uc =  r.getUrlConnection();
+                    httpConnection = (uc instanceof HttpURLConnection) ?
+                        httpConnection = (HttpURLConnection)uc : null;
                     return new BufferedReader(new InputStreamReader(r.stream()));
                 }
             } catch (IOException e) {
                 String msg = e.toString();
                 if (msg.contains("[401]") || msg.contains("Stream closed")) {
-                    Tesla.logger.log(Level.INFO, "Getting new token: " + msg.trim());
+                    Tesla.logger.info("Getting new token: " + msg.trim());
                     refreshAuthentication();
                     if (authenticatedVehicle == null) break;
                     rw = getAuthAPI(authenticatedVehicle);
@@ -188,7 +191,7 @@ public class Streamer {
         }
 
         // For some reason we can't get Streaming tokens. We've tried enough - Give up
-        Tesla.logger.log(Level.WARNING, "Error: couldn't retreive auth tokens");
+        Tesla.logger.warning("Error: couldn't retreive auth tokens");
         authenticatedVehicle = null;
     }
 
