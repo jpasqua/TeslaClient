@@ -17,8 +17,12 @@ import java.nio.channels.FileLock;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.ConsoleHandler;
+import java.util.logging.FileHandler;
+import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.logging.SimpleFormatter;
 import org.noroomattheinn.tesla.Tesla;
 
 /**
@@ -155,9 +159,10 @@ public class Utils {
      */
     public static <T extends Enum<T>> T stringToEnum(Class<T> eClass, String val) {
         try {
+            if (val == null || val.isEmpty()) { val = "Unknown"; }
             return Enum.valueOf(eClass, val);
         } catch (Exception e) {
-            logger.info("Problem converting String to Enum: " + e);
+            logger.info("Problem converting String (" + val + ")to Enum: " + e);
             return Enum.valueOf(eClass, "Unknown");
         }
     }
@@ -224,6 +229,10 @@ public class Utils {
  * Math Related Methods
  * 
  *----------------------------------------------------------------------------*/
+    
+    public static BigDecimal newBD(double val, int scale) {
+        return (new BigDecimal(val)).setScale(scale, BigDecimal.ROUND_HALF_UP);
+    }
     
     public static double percentChange(double oldValue, double newValue) {
         if (oldValue == 0) return 1.0;
@@ -326,5 +335,37 @@ public class Utils {
             return false;
         }
     }
+    
+    public static void setupLogger(File where, String basename, Logger logger, Level level) {
+        rotateLogs(where, basename, 3);
 
+        FileHandler fileHandler;
+        try {
+            logger.setLevel(level);
+            fileHandler = new FileHandler((new File(where, basename+"-00.log")).getAbsolutePath());
+            fileHandler.setFormatter(new SimpleFormatter());
+            fileHandler.setLevel(level);
+            logger.addHandler(fileHandler);
+            
+            for (Handler handler : Logger.getLogger("").getHandlers()) {
+                if (handler instanceof ConsoleHandler) { handler.setLevel(level); }
+            }
+        } catch (IOException | SecurityException ex) {
+            logger.severe("Unable to establish log file: " + ex);
+        }
+    }
+
+    private static void rotateLogs(File where, String basename, int max) {
+        File logfile = new File(where, String.format("%s-%02d.log", basename, max));
+        if (logfile.exists()) {
+            logfile.delete();
+        }
+        if (max > 0) {
+            File previous = new File(where, String.format("%s-%02d.log", basename, max - 1));
+            if (previous.exists()) {
+                previous.renameTo(logfile);
+            }
+            rotateLogs(where, basename, max - 1);
+        }
+    }
 }
