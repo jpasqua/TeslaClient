@@ -220,7 +220,7 @@ public class Tesla {
             return rawResponse.getJSONObject("response");
         } catch (IOException | JSONException ex) {
             String error = ex.toString().replace("\n", " -- ");
-            Tesla.logger.warning(
+            Tesla.logger.finer(
                     "Failed invoking (" + 
                     StringUtils.substringAfterLast(command, "/") + "): [" + 
                     StringUtils.substringAfter(error, "[") );
