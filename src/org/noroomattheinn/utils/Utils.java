@@ -189,7 +189,7 @@ public class Utils {
     public static void sleep(long timeInMillis, Predicate p) {
         long initialTime = System.currentTimeMillis();
         while (System.currentTimeMillis() - initialTime < timeInMillis) {
-            if (p.eval()) { Tesla.logger.info("RETURNING EARLY!"); return; }
+            if (p.eval()) { Tesla.logger.finest("Predicate satisfied - waking early"); return; }
             try { Thread.sleep(500); } catch (InterruptedException ex) { return; }
         }
     }
@@ -294,6 +294,14 @@ public class Utils {
  * 
  *----------------------------------------------------------------------------*/
     
+    /**
+     * Return the number of milliseconds that have elapsed between the specified
+     * time and now (as determined by System.currentTimeMillis).
+     * @param t A time before now
+     * @return  The difference between System.currentTimeMillis() and t
+     */
+    public static long timeSince(long t) { return System.currentTimeMillis() - t; }
+
     public static int compareVersions(String versionA, String versionB) {
         String[] partsOfA = versionA.split("\\.");
         String[] partsOfB = versionB.split("\\.");
