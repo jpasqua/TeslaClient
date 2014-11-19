@@ -31,10 +31,10 @@ public class StreamState extends BaseState {
     public double estLat;
     public double estLng;
     public int    power;
-    public String shiftState;
     public int    range;
     public int    estRange;
     
+    private String shiftState;
     
 /*==============================================================================
  * -------                                                               -------
@@ -58,6 +58,11 @@ public class StreamState extends BaseState {
         shiftState = source.optString(Streamer.Keys.shift_state);
         range = source.optInt(Streamer.Keys.range);
         estRange = source.optInt(Streamer.Keys.est_range);
+    }
+    
+    public String shiftState() {
+        if (shiftState == null || shiftState.isEmpty()) return "P";
+        return shiftState;
     }
     
     @Override public String toString() {
