@@ -80,6 +80,8 @@ public class ChargeState extends BaseState {
  * -------                                                               -------
  *============================================================================*/
     
+    public ChargeState() { this(emptyJSONObj); }
+    
     public ChargeState(JSONObject source) {
         super(source);
         chargeToMaxRange =  source.optBoolean("charge_to_max_range"); 
@@ -130,6 +132,10 @@ public class ChargeState extends BaseState {
 
     public boolean connectedToCharger() {
         return (chargingState != Status.Disconnected && chargingState != Status.Unknown);
+    }
+    
+    public boolean isCharging() {
+        return (chargingState == Status.Charging || chargeRate > 0);
     }
     
     @Override public String toString() {

@@ -5,6 +5,7 @@
  */
 package org.noroomattheinn.tesla;
 
+import org.noroomattheinn.utils.RestyWrapper;
 import us.monoid.json.JSONObject;
 
 /**
@@ -14,6 +15,8 @@ import us.monoid.json.JSONObject;
  * @author Joe Pasqua <joe at NoRoomAtTheInn dot org>
  */
 public abstract class BaseState {
+    public static final JSONObject emptyJSONObj = RestyWrapper.newJSONObject("{}");
+    
 /*==============================================================================
  * -------                                                               -------
  * -------              Public Interface To This Class                   ------- 

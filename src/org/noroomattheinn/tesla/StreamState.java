@@ -7,6 +7,7 @@
 package org.noroomattheinn.tesla;
 
 import java.util.Date;
+import static org.noroomattheinn.tesla.BaseState.emptyJSONObj;
 import us.monoid.json.JSONObject;
 
 /**
@@ -42,6 +43,8 @@ public class StreamState extends BaseState {
  * -------                                                               -------
  *============================================================================*/
     
+    public StreamState() { this(emptyJSONObj); }
+    
     public StreamState(JSONObject source) {
         super(source);
         vehicleTimestamp = source.optLong(Streamer.Keys.timestamp);
@@ -63,6 +66,10 @@ public class StreamState extends BaseState {
     public String shiftState() {
         if (shiftState == null || shiftState.isEmpty()) return "P";
         return shiftState;
+    }
+    
+    public boolean isInMotion() {
+        return (speed > 0 || !shiftState().equals("P"));
     }
     
     @Override public String toString() {
