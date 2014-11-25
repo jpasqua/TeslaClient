@@ -23,6 +23,7 @@ import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
+import org.apache.commons.lang3.SystemUtils;
 import org.noroomattheinn.tesla.Tesla;
 
 /**
@@ -287,7 +288,57 @@ public class Utils {
             }
         }
     }
+    
+/*------------------------------------------------------------------------------
+ *
+ * Platform-specific Utility Methods
+ * 
+ *----------------------------------------------------------------------------*/
 
+    public static File ensureAppFilesFolder(String appName) {
+        File aff = getAppFileFolder(appName);
+        if (aff.exists()) { return aff; }
+        if (aff.mkdir()) { return aff; }
+        logger.warning("Could not create Application Files Folder: " + aff);
+        return null;
+    }
+
+    public static File getAppFileFolder(String appName) {
+        String path = null;
+        if (SystemUtils.IS_OS_MAC) {
+            path = System.getProperty("user.home") + "/Library/Application Support/" + appName;
+        } else if (SystemUtils.IS_OS_WINDOWS) {
+            File base = javax.swing.filechooser.FileSystemView.getFileSystemView().getDefaultDirectory();
+            path = base.getAbsolutePath() + File.separator + appName;
+        } else if (SystemUtils.IS_OS_LINUX) {
+            path = System.getProperty("user.home") + File.separator + "." + appName;
+        }
+        return (path == null) ? null : new File(path);
+    }
+
+    public static void openFileViewer(String where) {
+        String command = "";
+
+        if (SystemUtils.IS_OS_MAC) {
+            command = "open";
+        } else if (SystemUtils.IS_OS_WINDOWS) {
+            command = "Explorer.exe";
+        } else if (SystemUtils.IS_OS_LINUX) {
+            //command = "vi";
+            command = "xdg-open";
+        }
+
+        try {
+            Process p = (new ProcessBuilder(command, where)).start();
+            p.waitFor();
+            if (p.exitValue() != 0) {
+                logger.warning("Unable to open file viewer with command: " + command);
+            }
+        } catch (IOException | InterruptedException ex) {
+            logger.warning("Unable able to open file viewer: " + ex);
+        }
+    }
+    
 /*------------------------------------------------------------------------------
  *
  * Other Utility Methods
