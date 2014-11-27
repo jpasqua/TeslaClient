@@ -7,7 +7,9 @@
 package org.noroomattheinn.utils;
 
 import java.io.IOException;
+import org.apache.commons.lang3.StringUtils;
 import org.noroomattheinn.tesla.Tesla;
+import static org.noroomattheinn.tesla.Tesla.logger;
 import us.monoid.web.FormContent;
 import us.monoid.web.TextResource;
 
@@ -26,7 +28,25 @@ public class MailGun {
         setAuthHeader(api, user, auth);
     }
 
+    public boolean send(String to, String message) {
+        final int SubjectLength = 30;
+        String subject = StringUtils.left(message, SubjectLength);
+        if (message.length() > SubjectLength) {
+            subject = subject + "...";
+        }
+        return send(to, subject, message);
+    }
+
     public boolean send(String to, String subject, String message) {
+        if (subject == null) subject = "";
+        if ((message == null || message.isEmpty()) && subject.isEmpty()) {
+            logger.warning("No message or subject specified, message not sent");
+            return false;
+        }
+        if (to == null || to.isEmpty()) {
+            logger.warning("No recipient specified, message not sent: " + message);
+            return false;
+        }
         to = to.replaceAll("\\s+", "");  // In case there is a comma-separated list of addresses
         FormContent fc = RestyWrapper.form(
                 "from=notifier@visibletesla.com" +
