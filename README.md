@@ -5,6 +5,8 @@ A Java implementation of the client side interface to the Tesla Model S API docu
 +	[Tesla Model S REST API](http://docs.timdorr.apiary.io/)
 +	[Tesla Model S Remote Access Protocol](http://tinyurl.com/mnjyhbb)
 
+**Note:** This version of the library corresponds to the "owner" API from Tesla which came about in the same timeframe as version 6 of the car software. This version is completely incompatible with the old Tesla API and the old version of this library. If you want to continue to use the older library, please refer to tag 0.5.
+
 This is unofficial documentation of the Tesla Model S REST API used by the iOS and Android apps. It features functionality to monitor and control the Model S remotely. The documents are updated as new information is found.
 
 This software and documentation do not come from Tesla Motors Inc.
