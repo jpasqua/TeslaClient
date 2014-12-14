@@ -67,7 +67,7 @@ public class RestyWrapper {
             rateLimits = new ArrayList<>();
             rateLimits.add(new Pair<>(10, 10));     // No more than 10 requests in 10 seconds
             rateLimits.add(new Pair<>(20, 60));     // No more than 20 requests/minute
-            rateLimits.add(new Pair<>(600, 60*60)); // No more than 600 requests/hour
+            rateLimits.add(new Pair<>(150, 10*60)); // No more than 150 requests/(10 minutes)
         } else {
             rateLimits = limits;
         }
