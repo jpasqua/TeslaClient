@@ -132,8 +132,9 @@ public class Utils {
     
     public static double cToF(double temp) { return temp * 9.0/5.0 + 32; }
     public static double fToC(double temp) { return (temp-32) * 5.0/9.0; }
-    public static double kToM(double k) { return k/KilometersPerMile; }
-    public static double mToK(double m) { return m * KilometersPerMile; }
+    public static double kmToMiles(double k) { return k/KilometersPerMile; }
+    public static double milesToKm(double m) { return m * KilometersPerMile; }
+    public static double metersToFeet(double meters) { return meters * 3.28084; }
     public static String yesNo(boolean b) { return b ? "Yes" : "No"; }
 
 /*------------------------------------------------------------------------------
