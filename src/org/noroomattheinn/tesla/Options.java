@@ -198,6 +198,20 @@ public class Options {
         @Override public String toString() { return descriptiveName; }
     }
 
+    public enum Model {
+        S60("S60"),
+        S85("S85"),
+        P85("P85"),
+        P85Plus("P85+"),
+        P85D("P85D");
+        
+        private String descriptiveName;
+
+        Model(String name) { this.descriptiveName = name; }
+
+        @Override public String toString() { return descriptiveName; }
+    };
+    
 /*------------------------------------------------------------------------------
  *
  * Internal State
@@ -261,7 +275,12 @@ public class Options {
         return optionToEnum(PaintColor.class, "PB", "PM", "PP"); }
     public SeatType seatType() {
         return optionToEnum(SeatType.class, "IB", "IP", "IZ", "IS"); }
-
+    public Model model() {
+        if (isPerfPlus()) { return Model.P85Plus; }
+        else if (isPerformance()) { return Model.P85; }
+        else if (batteryType() == Options.BatteryType.BT85) { return Model.S85; } 
+        return Model.S60;
+    }
 
     public boolean isPerformance() { return hasOption("PF"); }
     public boolean isPerfPlus() { return hasOption("PX") || wheelType() == WheelType.WTSG; }
