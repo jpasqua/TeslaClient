@@ -18,11 +18,19 @@ import us.monoid.web.TextResource;
  * @author Joe Pasqua <joe at NoRoomAtTheInn dot org>
  */
 public class MailGun {
+    private static MailGun defaultInstance = null;
+    
     private static final String SendEnpoint =
             "https://api.mailgun.net/v2/visibletesla.com/messages";
 
     private RestyWrapper api;
 
+    public static void createDefaultInstance(String user, String auth) {
+        defaultInstance = new MailGun(user, auth);
+    }
+    
+    public static MailGun get() { return defaultInstance; }
+    
     public MailGun(String user, String auth) {
         api = new RestyWrapper();
         setAuthHeader(api, user, auth);
