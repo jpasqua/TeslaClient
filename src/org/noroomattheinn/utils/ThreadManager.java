@@ -12,8 +12,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.logging.Logger;
 import org.apache.commons.io.IOUtils;
-import static org.noroomattheinn.tesla.Tesla.logger;
 
 /**
  * ThreadManager: Manage (start, stop, cleanup) threads used by the app
@@ -29,6 +29,7 @@ public class ThreadManager {
  *----------------------------------------------------------------------------*/
     
     private static ThreadManager instance = null;
+    private static final Logger logger = Logger.getLogger(ThreadManager.class.getName());
     
     private int threadID = 0;
     
@@ -36,7 +37,7 @@ public class ThreadManager {
     private final List<Stoppable>   stopList;
     private final Timer             timer;
     private boolean                 shuttingDown;
-
+    
 /*==============================================================================
  * -------                                                               -------
  * -------              Public Interface To This Class                   ------- 

@@ -223,4 +223,59 @@ public class GeoUtils {
         }
     }
     
+    public static abstract class Area implements LocationSource, Comparable<Area> {
+        public final double lat;
+        public final double lng;
+        public final String name;
+
+        public Area(double lat, double lng, String name) {
+            this.lat = lat;
+            this.lng = lng;
+            this.name = name;
+        }
+        
+        @Override public double getLat() { return lat; }
+
+        @Override public double getLng() { return lng; }
+        
+        public String getName() { return name; }
+        
+        /**
+         * An implementation of compareTo that really is about intersection.
+         * Subclasses must override this method.
+         * @param other The other Area to compare to
+         * @return  -1  If the 2 areas do not intersect
+         *           0  If the 2 areas intersect
+         *           1  Never returned
+         */
+        @Override abstract public int compareTo(Area o);
+    }
+    
+    public static class CircularArea extends Area {
+        public final double radius;
+        
+        public CircularArea() {
+            this(0, 0, 0, "-");
+        }
+
+        public CircularArea(double lat, double lng, double radius, String name) {
+            super(lat, lng, name);
+            this.radius = radius;
+        }
+
+        @Override public int compareTo(Area other) {
+            if (intersects(other)) return 0;
+            return -1;
+        }
+            
+        public boolean intersects(Area other) {
+            if (other instanceof CircularArea) {
+                double distance = GeoUtils.distance(lat, lng, other.lat, other.lng);
+                double coverage = radius + ((CircularArea)other).radius;
+                return distance <= coverage;
+            }
+            return false;
+        }
+
+    }
 }
