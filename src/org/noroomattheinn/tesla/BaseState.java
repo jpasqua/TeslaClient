@@ -5,7 +5,7 @@
  */
 package org.noroomattheinn.tesla;
 
-import org.noroomattheinn.utils.RestyWrapper;
+import org.noroomattheinn.utils.RestAPI;
 import us.monoid.json.JSONObject;
 
 /**
@@ -15,13 +15,14 @@ import us.monoid.json.JSONObject;
  * @author Joe Pasqua <joe at NoRoomAtTheInn dot org>
  */
 public abstract class BaseState {
-    public static final JSONObject emptyJSONObj = RestyWrapper.newJSONObject("{}");
-    
 /*==============================================================================
  * -------                                                               -------
  * -------              Public Interface To This Class                   ------- 
  * -------                                                               -------
  *============================================================================*/
+
+    protected static final JSONObject emptyJSONObj = RestAPI.newJSONObject("{}");
+    
     public final long         timestamp;
     public final JSONObject   rawState;
     public final boolean      valid;

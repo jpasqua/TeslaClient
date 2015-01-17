@@ -1,5 +1,5 @@
 /*
- * RestyWrapper.java - Copyright(c) 2013 Joe Pasqua
+ * RestAPI.java - Copyright(c) 2013 Joe Pasqua
  * Provided under the MIT License. See the LICENSE file for details.
  * Created: Sep 28, 2013
  */
@@ -8,11 +8,8 @@ package org.noroomattheinn.utils;
 
 import java.io.IOException;
 import java.net.URLConnection;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import us.monoid.json.JSONException;
@@ -24,11 +21,11 @@ import us.monoid.web.Resty;
 import us.monoid.web.TextResource;
 
 /**
- * RestyWrapper: Wraps the Resty interface and throttles the request rate
+ * RestAPI: Wraps the Resty interface and throttles the request rate
  * 
  * @author Joe Pasqua <joe at NoRoomAtTheInn dot org>
  */
-public class RestyWrapper {
+public class RestAPI {
 
 /*------------------------------------------------------------------------------
  *
@@ -36,7 +33,7 @@ public class RestyWrapper {
  * 
  *----------------------------------------------------------------------------*/
 
-    private static final Logger logger = Logger.getLogger(RestyWrapper.class.getName());
+    private static final Logger logger = Logger.getLogger(RestAPI.class.getName());
     
 /*------------------------------------------------------------------------------
  *
@@ -44,11 +41,9 @@ public class RestyWrapper {
  * 
  *----------------------------------------------------------------------------*/
 
-    private static CircularBuffer<Pair<Long,String>> timestamps = new CircularBuffer<>(100);
     private static Resty.Proxy proxy = null;
 
     private Resty resty;
-    private List<Pair<Integer,Integer>> rateLimits;
     
 /*==============================================================================
  * -------                                                               -------
@@ -56,12 +51,7 @@ public class RestyWrapper {
  * -------                                                               -------
  *============================================================================*/
         
-    public RestyWrapper(Resty.Option... options) {
-        // Set default rate limits
-        rateLimits = new ArrayList<>();
-        rateLimits.add(new Pair<>(10, 10));     // No more than 10 requests in 10 seconds
-        rateLimits.add(new Pair<>(20, 60));     // No more than 20 requests/minute
-        rateLimits.add(new Pair<>(150, 10*60)); // No more than 150 requests/(10 minutes)
+    public RestAPI(Resty.Option... options) {
         if (proxy != null && options != null) {
             int length = options.length;
             options = Arrays.copyOf(options, length+1);
@@ -70,11 +60,7 @@ public class RestyWrapper {
         resty = new Resty(options);
     }
     
-    public void setRateLimits(List<Pair<Integer,Integer>> limits) {
-        rateLimits = limits;
-    }
-    
-    public static void setProxy(String host, int port) {
+    public static void setDefaultProxy(String host, int port) {
         proxy = new Resty.Proxy(host, port);
     }
     
@@ -86,22 +72,18 @@ public class RestyWrapper {
  *----------------------------------------------------------------------------*/
     
     public TextResource text(String anUri) throws IOException {
-        startRequest(anUri);
         return resty.text(anUri);
     }
 
     public TextResource text(String anUri, AbstractContent content) throws IOException {
-        startRequest(anUri);
         return resty.text(anUri, content);
     }
     
     public JSONResource json(String anUri) throws IOException {
-        startRequest(anUri);
         return resty.json(anUri);
     }
     
     public JSONResource json(String anUri, AbstractContent content) throws IOException {
-        startRequest(anUri);
         return resty.json(anUri, content);
     }
     
@@ -123,27 +105,6 @@ public class RestyWrapper {
         resty.withHeader(aHeader, aValue);
     }
 
-    public static Map<Integer,Integer> stats() {
-        int[] counts = new int[3];
-        
-        Arrays.fill(counts, 0);
-        long now = System.currentTimeMillis();
-        for (int i = timestamps.size()-1; i >= 0; i--) {
-            Pair<Long,String> entry = timestamps.peekAt(i);
-            long age = now - entry.item1;
-            if (age < 10 * 1000) counts[0]++;
-            if (age < 60 * 1000) counts[1]++;
-            if (age < 60 * 60 * 1000) counts[2]++;
-        }
-
-        Map<Integer,Integer> stats = new TreeMap<>();
-        stats.put(10, counts[0]);
-        stats.put(60, counts[1]);
-        stats.put(60*60, counts[2]);
-
-        return stats;
-    }
-    
     public static <T> void put(JSONObject jo, String key, T val) {
         try {
             jo.put(key, val);
@@ -163,7 +124,7 @@ public class RestyWrapper {
     
 /*------------------------------------------------------------------------------
  *
- * PRIVATE - Utility Classes and Methods
+ * PRIVATE - Resty.Options for timeouts, user-agents, and throttling 
  * 
  *----------------------------------------------------------------------------*/
     
@@ -187,34 +148,44 @@ public class RestyWrapper {
         }
     }
         
-    private void startRequest(String endpoint) {
-        timestamps.insert(new Pair<>(System.currentTimeMillis(), endpoint));
-        while (rateLimit(endpoint)) {
-            Utils.sleep(5 * 1000);
-        }
-    }
-    
-    private boolean rateLimit(String endpoint) {
-        long now = System.currentTimeMillis();
-        int size = timestamps.size();
+    public static class Throttle extends Resty.Option {
+        private CircularBuffer<Pair<Long,String>> timestamps = new CircularBuffer<>(200);
+        private List<Pair<Integer,Integer>> rateLimits;
         
-        for (Pair<Integer,Integer> limit : rateLimits) {
-            int count = limit.item1;
-            int seconds = limit.item2;
-            if (size < count) return false;
-            
-            Pair<Long,String> p = timestamps.peekAt(size - count);
-            long nthRequest = p.item1;
-            
-            if ((now - nthRequest) < seconds * 1000) {
-                logger.log(
-                    Level.INFO, "Throttling: More than {0} requests in {1} seconds - {2}", 
-                    new Object[]{count, seconds, endpoint});
-                return true;
-            }    
+        public Throttle(List<Pair<Integer,Integer>> rateLimits) {
+            this.rateLimits = rateLimits;
         }
         
-        return false;
+        @Override public void apply(URLConnection aConnection) {
+            String endpoint = aConnection.getURL().toExternalForm();
+            timestamps.insert(new Pair<>(System.currentTimeMillis(), endpoint));
+            while (rateLimit(endpoint)) {
+                Utils.sleep(5 * 1000);
+            }
+        }
+        
+        private boolean rateLimit(String endpoint) {
+            long now = System.currentTimeMillis();
+            int size = timestamps.size();
+
+            for (Pair<Integer,Integer> limit : rateLimits) {
+                int count = limit.item1;
+                int seconds = limit.item2;
+                if (size < count) return false;
+
+                Pair<Long,String> p = timestamps.peekAt(size - count);
+                long nthRequest = p.item1;
+
+                if ((now - nthRequest) < seconds * 1000) {
+                    logger.log(
+                        Level.INFO, "Throttling: More than {0} requests in {1} seconds - {2}", 
+                        new Object[]{count, seconds, endpoint});
+                    return true;
+                }    
+            }
+
+            return false;
+        }
     }
     
 }

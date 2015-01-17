@@ -23,7 +23,7 @@ public class MailGun {
     private static final String SendEnpoint =
             "https://api.mailgun.net/v2/visibletesla.com/messages";
 
-    private RestyWrapper api;
+    private RestAPI api;
 
     public static void createDefaultInstance(String user, String auth) {
         defaultInstance = new MailGun(user, auth);
@@ -32,7 +32,7 @@ public class MailGun {
     public static MailGun get() { return defaultInstance; }
     
     public MailGun(String user, String auth) {
-        api = new RestyWrapper();
+        api = new RestAPI();
         setAuthHeader(api, user, auth);
     }
 
@@ -56,7 +56,7 @@ public class MailGun {
             return false;
         }
         to = to.replaceAll("\\s+", "");  // In case there is a comma-separated list of addresses
-        FormContent fc = RestyWrapper.form(
+        FormContent fc = RestAPI.form(
                 "from=notifier@visibletesla.com" +
                 "&to="+to +
                 "&subject="+subject + 
@@ -72,7 +72,7 @@ public class MailGun {
         return true;
     }
 
-    private void setAuthHeader(RestyWrapper api, String username, String authToken) {
+    private void setAuthHeader(RestAPI api, String username, String authToken) {
         byte[] authString = (username + ":" + authToken).getBytes();
         String encodedString = Utils.toB64(authString);
         api.withHeader("Authorization", "Basic " + encodedString);
