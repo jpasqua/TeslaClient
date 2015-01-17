@@ -48,8 +48,14 @@ public class Tesla {
  * Constants and Enums
  * 
  *----------------------------------------------------------------------------*/
+    
     public  static final Logger logger = Logger.getLogger(Tesla.class.getName());
-
+    
+    private static final String TeslaUserAgent =
+            "Model S 2.1.79 (Nexus 5; Android REL 4.4.4; en_US)";
+    private static final RestyWrapper.UAOption UserAgent =
+            new RestyWrapper.UAOption(TeslaUserAgent);
+    
     private static final String apiName = "Tesla Client API";
     private static final String TeslaURI = "https://owner-api.teslamotors.com/";
     private static final String APIVersion = "api/1/";
@@ -65,6 +71,7 @@ public class Tesla {
  * Internal State
  * 
  *----------------------------------------------------------------------------*/
+        
     private final RestyWrapper api;
     private List<Vehicle> vehicles;
     private String username;
@@ -77,20 +84,13 @@ public class Tesla {
  *============================================================================*/
     
     public Tesla() {
-        this(null, -1);
-    }
-    
-    public Tesla(String proxyHost, int proxyPort) {
-        RestyWrapper.setProxy(proxyHost, proxyPort);
-        api = new RestyWrapper(60*1000);    // Never wait more than a minute
+        api = createConnection(60* 1000);
         vehicles = new ArrayList<>();
     }
-    
-    public void setProxy(String proxyHost, int proxyPort) {
-        RestyWrapper.setProxy(proxyHost, proxyPort);
+        
+    final RestyWrapper createConnection(int readTimeout) {
+        return new RestyWrapper(new RestyWrapper.ReadTimeout(readTimeout), UserAgent);
     }
-    
-    public RestyWrapper getAPI() { return api; }
     
 /*------------------------------------------------------------------------------
  *

@@ -196,17 +196,18 @@ public class Streamer {
     }
 
     private RestyWrapper getAuthAPI(Vehicle v) {
+        Tesla tesla = v.tesla();
         String authToken = v.getStreamingToken();
 
         // This call requires BASIC authentication using the user name (this is
         // the user's registered email address) and the authToken.
         // We can't use the Resty authentication mechanism because the tesla
         // site doesn't seem to request authentication - it just expects the
-        // Authorization header feld to be present.
+        // Authorization header field to be present.
         // To accomplish that, create a new (temporary) Resty instance and
         // add the auth header to it.
-        RestyWrapper api = new RestyWrapper(ReadTimeoutInMillis);
-        setAuthHeader(api, v.tesla().getUsername(), authToken);
+        RestyWrapper api = tesla.createConnection(ReadTimeoutInMillis);
+        setAuthHeader(api, tesla.getUsername(), authToken);
         return api;
     }
     

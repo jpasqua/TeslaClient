@@ -46,7 +46,7 @@ public class RestyWrapper {
 
     private static CircularBuffer<Pair<Long,String>> timestamps = new CircularBuffer<>(100);
     private static Resty.Proxy proxy = null;
-    
+
     private Resty resty;
     private List<Pair<Integer,Integer>> rateLimits;
     
@@ -55,44 +55,30 @@ public class RestyWrapper {
  * -------              Public Interface To This Class                   ------- 
  * -------                                                               -------
  *============================================================================*/
-
-/*------------------------------------------------------------------------------
- *
- * Constructors
- * 
- *----------------------------------------------------------------------------*/
-    
-    public RestyWrapper(int readTimeout, List<Pair<Integer,Integer>> limits) {
-        if (limits == null) {
-            rateLimits = new ArrayList<>();
-            rateLimits.add(new Pair<>(10, 10));     // No more than 10 requests in 10 seconds
-            rateLimits.add(new Pair<>(20, 60));     // No more than 20 requests/minute
-            rateLimits.add(new Pair<>(150, 10*60)); // No more than 150 requests/(10 minutes)
-        } else {
-            rateLimits = limits;
-        }
         
-        if (readTimeout <= 0) {
-            resty = proxy != null ? new Resty(proxy) : new Resty();
-        } else {
-            resty = proxy != null ? 
-                    new Resty(new ReadTimeoutOption(readTimeout), proxy) :
-                    new Resty(new ReadTimeoutOption(readTimeout));
+    public RestyWrapper(Resty.Option... options) {
+        // Set default rate limits
+        rateLimits = new ArrayList<>();
+        rateLimits.add(new Pair<>(10, 10));     // No more than 10 requests in 10 seconds
+        rateLimits.add(new Pair<>(20, 60));     // No more than 20 requests/minute
+        rateLimits.add(new Pair<>(150, 10*60)); // No more than 150 requests/(10 minutes)
+        if (proxy != null && options != null) {
+            int length = options.length;
+            options = Arrays.copyOf(options, length+1);
+            options[length] = proxy;
         }
+        resty = new Resty(options);
     }
     
-    public RestyWrapper() {
-        this(-1, null);
+    public void setRateLimits(List<Pair<Integer,Integer>> limits) {
+        rateLimits = limits;
     }
     
-    public RestyWrapper(List<Pair<Integer,Integer>> limits) {
-        this(-1, limits);
+    public static void setProxy(String host, int port) {
+        proxy = new Resty.Proxy(host, port);
     }
     
-    public RestyWrapper(int readTimeout) {
-        this(readTimeout, null);
-    }
-    
+
 /*------------------------------------------------------------------------------
  *
  * REST API Invocations
@@ -125,11 +111,6 @@ public class RestyWrapper {
  * 
  *----------------------------------------------------------------------------*/
 
-    public static void setProxy(String proxyHost, int proxyPort) {
-        if (proxyHost == null || proxyPort < 0) proxy = null;
-        else  proxy = new Resty.Proxy(proxyHost, proxyPort);
-    }
-    
     public static FormContent form(String query) {
         return Resty.form(query);
     }
@@ -186,13 +167,23 @@ public class RestyWrapper {
  * 
  *----------------------------------------------------------------------------*/
     
-    private class ReadTimeoutOption extends Resty.Option {
+    public static class ReadTimeout extends Resty.Option {
         private int timeout;
         
-        ReadTimeoutOption(int timeout) { this.timeout = timeout; }
+        public ReadTimeout(int timeout) { this.timeout = timeout; }
         
         @Override public void apply(URLConnection aConnection) {
             aConnection.setReadTimeout(timeout);
+        }
+    }
+        
+    public static class UAOption extends Resty.Option {
+        private String ua;
+        
+        public UAOption(String ua) { this.ua = ua; }
+        
+        @Override public void apply(URLConnection aConnection) {
+            aConnection.setRequestProperty("User-Agent", ua);
         }
     }
         
