@@ -70,6 +70,7 @@ public class ChargeState extends BaseState {
     public final int      chargeLimitSOCMin;
     public final int      chargeLimitSOCStd;
 
+    public final boolean  motorizedChargePort;
     public final boolean  euVehicle;
     public final int      chargerPhases;
     
@@ -117,6 +118,7 @@ public class ChargeState extends BaseState {
 
         euVehicle = source.optBoolean("eu_vehicle");
         chargerPhases = source.optInt("charger_phases");
+        motorizedChargePort = source.optBoolean("motorized_charge_port");
 
         batteryHeaterOn = source.optBoolean("battery_heater_on");
         notEnoughPowerToHeat = source.optBoolean("not_enough_power_to_heat");
