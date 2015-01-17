@@ -5,7 +5,7 @@
  */
 package org.noroomattheinn.tesla;
 
-import org.noroomattheinn.utils.RestAPI;
+import org.noroomattheinn.utils.RestHelper;
 import us.monoid.json.JSONObject;
 
 /**
@@ -21,7 +21,7 @@ public abstract class BaseState {
  * -------                                                               -------
  *============================================================================*/
 
-    protected static final JSONObject emptyJSONObj = RestAPI.newJSONObject("{}");
+    protected static final JSONObject emptyJSONObj = RestHelper.newJSONObject("{}");
     
     public final long         timestamp;
     public final JSONObject   rawState;

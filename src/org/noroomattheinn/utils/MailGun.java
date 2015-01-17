@@ -11,6 +11,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.noroomattheinn.tesla.Tesla;
 import static org.noroomattheinn.tesla.Tesla.logger;
 import us.monoid.web.FormContent;
+import us.monoid.web.Resty;
 import us.monoid.web.TextResource;
 
 /**
@@ -23,7 +24,7 @@ public class MailGun {
     private static final String SendEnpoint =
             "https://api.mailgun.net/v2/visibletesla.com/messages";
 
-    private RestAPI api;
+    private Resty api;
 
     public static void createDefaultInstance(String user, String auth) {
         defaultInstance = new MailGun(user, auth);
@@ -32,7 +33,7 @@ public class MailGun {
     public static MailGun get() { return defaultInstance; }
     
     public MailGun(String user, String auth) {
-        api = new RestAPI();
+        api = RestHelper.getInstance();
         setAuthHeader(api, user, auth);
     }
 
@@ -56,7 +57,7 @@ public class MailGun {
             return false;
         }
         to = to.replaceAll("\\s+", "");  // In case there is a comma-separated list of addresses
-        FormContent fc = RestAPI.form(
+        FormContent fc = Resty.form(
                 "from=notifier@visibletesla.com" +
                 "&to="+to +
                 "&subject="+subject + 
@@ -72,7 +73,7 @@ public class MailGun {
         return true;
     }
 
-    private void setAuthHeader(RestAPI api, String username, String authToken) {
+    private void setAuthHeader(Resty api, String username, String authToken) {
         byte[] authString = (username + ":" + authToken).getBytes();
         String encodedString = Utils.toB64(authString);
         api.withHeader("Authorization", "Basic " + encodedString);

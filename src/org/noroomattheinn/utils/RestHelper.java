@@ -1,12 +1,11 @@
 /*
- * RestAPI.java - Copyright(c) 2013 Joe Pasqua
+ * RestHelper.java - Copyright(c) 2013 Joe Pasqua
  * Provided under the MIT License. See the LICENSE file for details.
  * Created: Sep 28, 2013
  */
 
 package org.noroomattheinn.utils;
 
-import java.io.IOException;
 import java.net.URLConnection;
 import java.util.Arrays;
 import java.util.List;
@@ -14,18 +13,14 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import us.monoid.json.JSONException;
 import us.monoid.json.JSONObject;
-import us.monoid.web.AbstractContent;
-import us.monoid.web.FormContent;
-import us.monoid.web.JSONResource;
 import us.monoid.web.Resty;
-import us.monoid.web.TextResource;
 
 /**
- * RestAPI: Wraps the Resty interface and throttles the request rate
+ * RestHelper: Wraps the Resty interface and throttles the request rate
  * 
  * @author Joe Pasqua <joe at NoRoomAtTheInn dot org>
  */
-public class RestAPI {
+public class RestHelper {
 
 /*------------------------------------------------------------------------------
  *
@@ -33,7 +28,7 @@ public class RestAPI {
  * 
  *----------------------------------------------------------------------------*/
 
-    private static final Logger logger = Logger.getLogger(RestAPI.class.getName());
+    private static final Logger logger = Logger.getLogger(RestHelper.class.getName());
     
 /*------------------------------------------------------------------------------
  *
@@ -42,8 +37,6 @@ public class RestAPI {
  *----------------------------------------------------------------------------*/
 
     private static Resty.Proxy proxy = null;
-
-    private Resty resty;
     
 /*==============================================================================
  * -------                                                               -------
@@ -51,13 +44,17 @@ public class RestAPI {
  * -------                                                               -------
  *============================================================================*/
         
-    public RestAPI(Resty.Option... options) {
-        if (proxy != null && options != null) {
-            int length = options.length;
-            options = Arrays.copyOf(options, length+1);
-            options[length] = proxy;
+    public static Resty getInstance(Resty.Option... options) {
+        if (proxy != null) {
+            if (options != null) {
+                int length = options.length;
+                options = Arrays.copyOf(options, length+1);
+                options[length] = proxy;
+            } else {
+                options = new Resty.Option[] {proxy};
+            }
         }
-        resty = new Resty(options);
+        return new Resty(options);
     }
     
     public static void setDefaultProxy(String host, int port) {
@@ -67,43 +64,9 @@ public class RestAPI {
 
 /*------------------------------------------------------------------------------
  *
- * REST API Invocations
- * 
- *----------------------------------------------------------------------------*/
-    
-    public TextResource text(String anUri) throws IOException {
-        return resty.text(anUri);
-    }
-
-    public TextResource text(String anUri, AbstractContent content) throws IOException {
-        return resty.text(anUri, content);
-    }
-    
-    public JSONResource json(String anUri) throws IOException {
-        return resty.json(anUri);
-    }
-    
-    public JSONResource json(String anUri, AbstractContent content) throws IOException {
-        return resty.json(anUri, content);
-    }
-    
-/*------------------------------------------------------------------------------
- *
  *  Utility Functions
  * 
  *----------------------------------------------------------------------------*/
-
-    public static FormContent form(String query) {
-        return Resty.form(query);
-    }
-    
-	public static String enc(String unencodedString) {
-        return Resty.enc(unencodedString);
-    }
-    
-    public void withHeader(String aHeader, String aValue) {
-        resty.withHeader(aHeader, aValue);
-    }
 
     public static <T> void put(JSONObject jo, String key, T val) {
         try {

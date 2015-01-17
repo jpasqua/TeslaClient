@@ -12,10 +12,10 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URLConnection;
 import org.apache.commons.lang3.StringUtils;
-import org.noroomattheinn.utils.RestAPI;
 import org.noroomattheinn.utils.Utils;
 import us.monoid.json.JSONException;
 import us.monoid.json.JSONObject;
+import us.monoid.web.Resty;
 import us.monoid.web.TextResource;
 
 /**
@@ -133,7 +133,7 @@ public class Streamer {
         String endpoint = String.format(
                 endpointFormat, authenticatedVehicle.getStreamingVID(), allKeys);
         
-        RestAPI rw = getAuthAPI(authenticatedVehicle);
+        Resty rw = getAuthAPI(authenticatedVehicle);
         
         for (int i = 0; i < 5; i++) {
             try {
@@ -170,7 +170,7 @@ public class Streamer {
  * 
  *----------------------------------------------------------------------------*/
         
-    private void setAuthHeader(RestAPI api, String username, String authToken) {
+    private void setAuthHeader(Resty api, String username, String authToken) {
         byte[] authString = (username + ":" + authToken).getBytes();
         String encodedString = Utils.toB64(authString);
         api.withHeader("Authorization", "Basic " + encodedString);
@@ -195,7 +195,7 @@ public class Streamer {
         authenticatedVehicle = null;
     }
 
-    private RestAPI getAuthAPI(Vehicle v) {
+    private Resty getAuthAPI(Vehicle v) {
         Tesla tesla = v.tesla();
         String authToken = v.getStreamingToken();
 
@@ -206,7 +206,7 @@ public class Streamer {
         // Authorization header field to be present.
         // To accomplish that, create a new (temporary) Resty instance and
         // add the auth header to it.
-        RestAPI api = tesla.createConnection(ReadTimeoutInMillis);
+        Resty api = tesla.createConnection(ReadTimeoutInMillis);
         setAuthHeader(api, tesla.getUsername(), authToken);
         return api;
     }

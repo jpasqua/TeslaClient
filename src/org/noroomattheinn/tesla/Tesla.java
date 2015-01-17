@@ -20,7 +20,7 @@ import javax.crypto.ShortBufferException;
 import javax.crypto.spec.SecretKeySpec;
 import org.apache.commons.lang3.StringUtils;
 import org.noroomattheinn.utils.Pair;
-import org.noroomattheinn.utils.RestAPI;
+import org.noroomattheinn.utils.RestHelper;
 import us.monoid.json.JSONArray;
 import us.monoid.json.JSONException;
 import us.monoid.json.JSONObject;
@@ -62,18 +62,18 @@ public class Tesla {
         " \"email\" : \"%s\", " + 
         " \"password\" : \"%s\" }";
     
-    private static final RestAPI.Throttle Throttle;
+    private static final RestHelper.Throttle Throttle;
     static {
         List<Pair<Integer,Integer>> rateLimits = new ArrayList<>();
         rateLimits.add(new Pair<>(10, 10));     // No more than 10 requests in 10 seconds
         rateLimits.add(new Pair<>(20, 60));     // No more than 20 requests/minute
         rateLimits.add(new Pair<>(150, 10*60)); // No more than 150 requests/(10 minutes)
-        Throttle = new RestAPI.Throttle(rateLimits);
+        Throttle = new RestHelper.Throttle(rateLimits);
     }
     private static final String TeslaUserAgent =
             "Model S 2.1.79 (Nexus 5; Android REL 4.4.4; en_US)";
-    private static final RestAPI.UAOption UserAgent =
-            new RestAPI.UAOption(TeslaUserAgent);
+    private static final RestHelper.UAOption UserAgent =
+            new RestHelper.UAOption(TeslaUserAgent);
     
 /*------------------------------------------------------------------------------
  *
@@ -81,7 +81,7 @@ public class Tesla {
  * 
  *----------------------------------------------------------------------------*/
         
-    private final RestAPI api;
+    private final Resty api;
     private List<Vehicle> vehicles;
     private String username;
     private String token;
@@ -97,9 +97,9 @@ public class Tesla {
         vehicles = new ArrayList<>();
     }
         
-    final RestAPI createConnection(int readTimeout) {
-        return new RestAPI(
-                new RestAPI.ReadTimeout(readTimeout),
+    final Resty createConnection(int readTimeout) {
+        return RestHelper.getInstance(
+                new RestHelper.ReadTimeout(readTimeout),
                 UserAgent, Throttle);
     }
     
