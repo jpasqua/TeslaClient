@@ -63,7 +63,6 @@ public class ChargeState extends BaseState {
     // they return. We're leaving them as String for now
     public final String   chargeStartingRange;
     public final String   chargeStartingSOC;
-    public final String   scheduledChargeStartTime;
     public final String   userChargeEnableRequest;
 
     public final int      chargeLimitSOC;
@@ -109,7 +108,6 @@ public class ChargeState extends BaseState {
         // they return. We're leaving them as String for now
         chargeStartingRange =  source.optString("charge_starting_range"); 
         chargeStartingSOC =  source.optString("charge_starting_soc"); 
-        scheduledChargeStartTime =  source.optString("scheduled_charging_start_time"); 
         userChargeEnableRequest =  source.optString("user_charge_enable_request"); 
 
         chargeLimitSOC =  source.optInt("charge_limit_soc"); 
