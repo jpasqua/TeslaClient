@@ -161,10 +161,10 @@ public class Utils {
      */
     public static <T extends Enum<T>> T stringToEnum(Class<T> eClass, String val) {
         try {
-            if (val == null || val.isEmpty()) { val = "Unknown"; }
+            if (val == null || val.isEmpty() || val.equals("null")) { val = "Unknown"; }
             return Enum.valueOf(eClass, val);
         } catch (Exception e) {
-            logger.info("Problem converting String (" + val + ")to Enum: " + e);
+            logger.info("Problem converting String (" + val + ") to Enum: " + e);
             return Enum.valueOf(eClass, "Unknown");
         }
     }
