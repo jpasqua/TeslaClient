@@ -103,7 +103,7 @@ public class ChargeState extends BaseState {
         chargerPower =  source.optInt("charger_power"); 
         chargingState =  Utils.stringToEnum(ChargeState.Status.class, source.optString("charging_state"));
         if (chargingState == ChargeState.Status.Unknown && valid)
-            Tesla.logger.info("Raw charge state: " + source.toString());
+            Tesla.logger.fine("Raw charge state: " + source.toString());
 
         // The following fields aren't well defined in terms of what type and values 
         // they return. We're leaving them as String for now
@@ -138,11 +138,18 @@ public class ChargeState extends BaseState {
         return (chargingState == Status.Charging || chargeRate > 0);
     }
     
+    public String timeToFull() {
+        int hours = (int)timeToFullCharge;
+        double fractionalHour = timeToFullCharge - hours;
+        int minutes = (int)(fractionalHour * 60);
+        int seconds = (int)((fractionalHour * 60) - minutes) * 60;
+        return String.format("%02d:%02d:%02d", hours, minutes, seconds);
+    }
+    
     @Override public String toString() {
         return String.format(
             "    Estimated, Ideal, Rated: (%3.1f, %3.1f, %3.1f)\n" +
             "    SOC: %d%%", 
-            estimatedRange, idealRange, range, batteryPercent
-            );
+            estimatedRange, idealRange, range, batteryPercent);
     }
 }
