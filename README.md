@@ -32,53 +32,58 @@ This project assumes a directory structure that looks like this:
 			src
 	ThirdParty				-- A repository for third party library dependencies
 		apache
-			commons-codec-1.8
-			commons-lang3-3.1
+			commons-codec-1.10
+			commons-lang3-3.3.2
 			commons-logging-1.1.3
 		geocoder
 		google-gson-2.2.4
 		resty
 
-The Tesla/Tesla directory corrsponds to this github project (TeslaClient.git). 
+The Tesla/TeslaClient directory corrsponds to this github project (TeslaClient.git). 
 
 The following commands will create and populate the hierarchy. It assumes that:
 
-+ <code>$DOWNLOAD</code>is the directory where you downloaded the project from github
-+ <code>$ROOT</code>is where you want to place the overall hierarchy
++ <code>$ROOT</code>is where the Tesla and ThirdParty directories will reside
 
 Be sure to either set these variables or adapt the commands below:
 
 	cd $ROOT
-	mkdir Tesla
-	mv $DOWNLOAD/TeslaClient-master Tesla/TeslaClient
-	mkdir ThirdParty
-	mkdir ThirdParty/apache
-	mkdir ThirdParty/geocoder-java
-	mkdir ThirdParty/resty
+	mkdir $ROOT/Tesla
+    mkdir $ROOT/ThirdParty
+    mkdir $ROOT/ThirdParty/apache
+    mkdir $ROOT/ThirdParty/geocoder-java
+    mkdir $ROOT/ThirdParty/resty
+
+    # Download the TeslaClient repo
+    cd $ROOT/Tesla
+    git clone https://github.com/jpasqua/TeslaClient.git
 
 	# Download the apache libraries
-	cd ThirdParty/apache
-	curl -s -O http://www.eng.lsu.edu/mirrors/apache//commons/codec/binaries/commons-codec-1.8-bin.zip
-	unzip commons-codec-1.8-bin.zip
+	cd $ROOT/ThirdParty/apache
+	curl -s -O http://www.eng.lsu.edu/mirrors/apache/commons/codec/binaries/commons-codec-1.10-bin.zip
+	unzip commons-codec-1.10-bin.zip
+    rm commons-codec-1.10-bin.zip
 
-	curl -s -O http://mirror.cc.columbia.edu/pub/software/apache//commons/lang/binaries/commons-lang3-3.1-bin.zip
-	unzip commons-lang3-3.1-bin.zip
+	curl -s -O http://mirror.cc.columbia.edu/pub/software/apache//commons/lang/binaries/commons-lang3-3.3.2-bin.zip
+	unzip commons-lang3-3.3.2-bin.zip
+    rm commons-lang3-3.3.2-bin.zip
 
 	curl -s -O http://apache.mirrors.hoobly.com//commons/logging/binaries/commons-logging-1.1.3-bin.zip
 	unzip commons-logging-1.1.3-bin.zip
-	rm *.zip
+	rm commons-logging-1.1.3-bin.zip
 
 	# Download the geocoder library
-	cd ../geocoder-java
+	cd $ROOT/ThirdParty/geocoder-java
 	curl -s -O http://repo1.maven.org/maven2/com/google/code/geocoder-java/geocoder-java/0.15/geocoder-java-0.15.jar
 
 	# Download the gson library
-	cd ..
+	cd $ROOT/ThirdParty
 	curl -s -O http://google-gson.googlecode.com/files/google-gson-2.2.4-release.zip
 	unzip google-gson-2.2.4-release.zip
 	rm google-gson-2.2.4-release.zip
 
 	# Download the resty library
+    cd $ROOT/ThirdParty
 	cd resty
 	curl -s -O http://repo2.maven.org/maven2/us/monoid/web/resty/0.3.2/resty-0.3.2.jar
 
