@@ -233,6 +233,9 @@ public class Options {
             return;
         }
 
+        // Deal with special case for P85D
+        optionsString = optionsString.replace("P85D", "PD01");
+
         // Deal with the one 3 letter prefix in the options: PBT. Turn this into BT
         optionsString = optionsString.replace("PBT", "BT");
 
@@ -276,6 +279,7 @@ public class Options {
     public SeatType seatType() {
         return optionToEnum(SeatType.class, "IB", "IP", "IZ", "IS"); }
     public Model model() {
+        if (isP85D()) { return Model.P85D; }
         if (isPerfPlus()) { return Model.P85Plus; }
         else if (isPerformance()) { return Model.P85; }
         else if (batteryType() == Options.BatteryType.BT85) { return Model.S85; } 
@@ -284,6 +288,7 @@ public class Options {
 
     public boolean isPerformance() { return hasOption("PF"); }
     public boolean isPerfPlus() { return hasOption("PX") || wheelType() == WheelType.WTSG; }
+    public boolean isP85D() { return hasOption("PD"); }
     public boolean hasThirdRow() { return hasOption("TR"); }
     public boolean hasAirSuspension() { return hasOption("SU"); }
     public boolean hasSupercharger() { return hasOption("SC") || isPerfPlus(); }    
@@ -304,7 +309,9 @@ public class Options {
     public boolean hasLightingPackage() { return hasOption("LP"); }
     public boolean hasSecurityPackage() { return hasOption("SP"); }
     public boolean hasColdWeather() { return hasOption("CW"); }
-    
+    public boolean hasFogLamps() { return hasOption("FG"); }
+    public boolean hasExtendedNappaTrim() { return hasOption("IX"); }
+    public boolean hasYachtFloor() { return hasOption("YF"); }
     
     @Override
     public String toString() {
@@ -315,6 +322,7 @@ public class Options {
                 "    Performance Options: [\n" +
                 "       Performance: %b\n" +
                 "       Performance+: %b\n" +
+                "       P85D: %b\n" +
                 "       Performance Exterior: %b\n" +
                 "       Performance Powertrain: %b\n" +
                 "    ]\n" +
@@ -324,6 +332,7 @@ public class Options {
                 "    Wheels: %s\n" +
                 "    Seats: %s\n" +
                 "    Decor: %s\n" +
+                "    Extended Nappa Leather Time: %b\n" +
                 "    Air Suspension: %b\n" +
                 "    Tech Upgrades: [\n" +
                 "        Tech Package: %b\n" +
@@ -350,20 +359,21 @@ public class Options {
                 "        Parking Sensors: %b\n" +
                 "        Lighting Package: %b\n" + 
                 "        Security Package: %b\n" +
+                "        Fog Lamps: %b\n" +
                 "        Cold Weather Package: %b\n" +
                 "    ]\n",
                 region(), trimLevel(), driveSide(),
-                isPerformance(), isPerfPlus(),
+                isPerformance(), isPerfPlus(), isP85D(),
                 hasPerfExterior(), hasPerfPowertrain(),
                 batteryType(), paintColor(), roofType(), wheelType(),
-                seatType(), decorType(), hasAirSuspension(),
+                seatType(), decorType(), hasExtendedNappaTrim(), hasAirSuspension(),
                 hasTechPackage(), hasPowerLiftgate(), hasPremiumLighting(),
                 hasHomeLink(), hasNavSystem(),
                 hasAudioUpgrade(), hasSatRadio(),
                 hasSupercharger(), hasTwinCharger(), hasHPWC(),
                 hasParcelShelf(), hasPaintArmor(), hasThirdRow(),
                 hasParkingSensors(), hasLightingPackage(), hasSecurityPackage(),
-                hasColdWeather());
+                hasFogLamps(), hasColdWeather());
     }
 
 /*------------------------------------------------------------------------------
@@ -381,7 +391,7 @@ public class Options {
         // followed by 00 or 01. Treat them specially.
         if (optionName.startsWith("X"))
             return true;
-        return option.equals(optionName + "01");
+        return !option.equals(optionName + "00");
     }
         
     /*
