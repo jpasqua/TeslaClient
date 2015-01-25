@@ -63,7 +63,7 @@ public class VehicleState extends BaseState {
         isFTOpen = source.optInt("ft") != 0;
         isRTOpen = source.optInt("rt") != 0;
         locked = source.optBoolean("locked");
-        hasPano = source.optBoolean("sun_roof_installed");
+        hasPano = source.optInt("sun_roof_installed") != 0;
         panoPercent = source.optInt("sun_roof_percent_open");
         panoState = Utils.stringToEnum(
                 VehicleState.PanoPosition.class, source.optString("sun_roof_state"));
