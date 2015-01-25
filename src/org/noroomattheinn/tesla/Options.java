@@ -218,7 +218,7 @@ public class Options {
  * 
  *----------------------------------------------------------------------------*/
     private final Map<String,String> optionsFound;
- 
+    private int productionYear = 2012;
     
 /*==============================================================================
  * -------                                                               -------
@@ -250,6 +250,19 @@ public class Options {
                 continue;
             }
             String prefix = token.substring(0,2);
+            
+            // The MS token appears to be a model year or production year. MS
+            // is followed by a two digit number which is monotonically increasing
+            // starting with 01. 01 corresponds to the first production year, 2012.
+            // 02 corresponds to 2013 and so on.
+            if (prefix.equals("MS")) {
+                if (token.length() == 4) {  // This is a well formed token
+                    int yearOffset = Integer.valueOf(token.substring(2,4));
+                    productionYear = 2011 + yearOffset;
+                    continue;
+                }
+            }
+            
             // X0 options are handled differently. Speculation is that these are
             // the old way Tesla handled things. In this case we store the whole
             // token as the key and the value.
@@ -285,6 +298,7 @@ public class Options {
         else if (batteryType() == Options.BatteryType.BT85) { return Model.S85; } 
         return Model.S60;
     }
+    public int productionYear() { return productionYear; }
 
     public boolean isPerformance() { return hasOption("PF"); }
     public boolean isPerfPlus() { return hasOption("PX") || wheelType() == WheelType.WTSG; }
@@ -317,6 +331,7 @@ public class Options {
     public String toString() {
         return String.format(
                 "    Region: %s\n" +
+                "    Year: %d\n" +
                 "    Trim: %s\n" +
                 "    Drive Side: %s\n" +
                 "    Performance Options: [\n" +
@@ -362,7 +377,7 @@ public class Options {
                 "        Fog Lamps: %b\n" +
                 "        Cold Weather Package: %b\n" +
                 "    ]\n",
-                region(), trimLevel(), driveSide(),
+                region(), productionYear(), trimLevel(), driveSide(),
                 isPerformance(), isPerfPlus(), isP85D(),
                 hasPerfExterior(), hasPerfPowertrain(),
                 batteryType(), paintColor(), roofType(), wheelType(),
