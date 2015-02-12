@@ -22,7 +22,18 @@ Use these programs at your own risk. The authors do not guaranteed the proper fu
 #Contributors
 [Joe Pasqua](https://github.com/jpasqua)
 
-#Preparing your build environment
+[Greyson Fischer](https://github.com/greyson)
+
+# Preparing your build environment (gradle)
+
+The following command will resolve and download all dependencies, set
+up the classpath, and create the JAR file.  This allows the Tesla
+project to be included in other gradle builds in the usual way (using
+`settings.gradle`)
+
+        > gradle assemble
+
+#Preparing your build environment (Ant/NetBeans)
 
 This project assumes a directory structure that looks like this:
 
