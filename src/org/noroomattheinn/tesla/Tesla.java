@@ -150,15 +150,14 @@ public class Tesla {
 
            payload = stringWriter.toString();
         }
-        catch( JSONException ex )
-        {
+        catch( JSONException ex ) {
            throw new Error( "Big problem. Can't write to string.", ex );
         }
 
         try {
             JSONResource r = api.json(
                     rawEndpoint("oauth/token"),
-                    Resty.content( payload ));
+                    Resty.content(new JSONObject(payload)));
             if (r == null) return false;
             String accessToken = r.object().getString("access_token");
             if (accessToken == null) return false;
