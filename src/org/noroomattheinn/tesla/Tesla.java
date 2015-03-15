@@ -7,6 +7,7 @@
 package org.noroomattheinn.tesla;
 
 import java.io.IOException;
+import java.io.StringWriter;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
@@ -24,6 +25,7 @@ import org.noroomattheinn.utils.RestHelper;
 import us.monoid.json.JSONArray;
 import us.monoid.json.JSONException;
 import us.monoid.json.JSONObject;
+import us.monoid.json.JSONWriter;
 import us.monoid.web.Content;
 import us.monoid.web.JSONResource;
 import us.monoid.web.Resty;
@@ -55,12 +57,6 @@ public class Tesla {
     private static final String apiName = "Tesla Client API";
     private static final String TeslaURI = "https://owner-api.teslamotors.com/";
     private static final String APIVersion = "api/1/";
-    private static final String LoginPayloadFormat = "{" + 
-        " \"grant_type\" : \"password\", " + 
-        " \"client_id\" : \"%s\", " +
-        " \"client_secret\" : \"%s\", " +
-        " \"email\" : \"%s\", " + 
-        " \"password\" : \"%s\" }";
     
     private static final RestHelper.Throttle Throttle;
     static {
@@ -137,12 +133,32 @@ public class Tesla {
      */
     public boolean connect(String username, String password) {
         String[] apiMaterial = getAPIMaterial();
-        String payload = String.format(
-                LoginPayloadFormat, apiMaterial[0], apiMaterial[1], username, password);
+
+        // Create the payload
+        String payload;
+        try
+        {
+           StringWriter stringWriter = new StringWriter();
+           JSONWriter writer = new JSONWriter( stringWriter );
+           writer.object()
+              .key( "grant_type" )   .value( "password" )
+              .key( "client_id" )    .value( apiMaterial[0] )
+              .key( "client_secret" ).value( apiMaterial[1] )
+              .key( "email" )        .value( username )
+              .key( "password" )     .value( password )
+              .endObject();
+
+           payload = stringWriter.toString();
+        }
+        catch( JSONException ex )
+        {
+           throw new Error( "Big problem. Can't write to string.", ex );
+        }
+
         try {
             JSONResource r = api.json(
                     rawEndpoint("oauth/token"),
-                    Resty.content(new JSONObject(payload)));
+                    Resty.content( payload ));
             if (r == null) return false;
             String accessToken = r.object().getString("access_token");
             if (accessToken == null) return false;
