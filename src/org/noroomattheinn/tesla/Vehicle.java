@@ -253,9 +253,9 @@ public class Vehicle {
         return new Result(tesla.invokeCommand(charging? Charge_Start : Charge_Stop));
     }
     
-    public Result startCharing() { return setChargeState(true); }
+    public Result startCharging() { return setChargeState(true); }
 
-    public Result stopCharing() { return setChargeState(false); }
+    public Result stopCharging() { return setChargeState(false); }
     
     public Result setChargeRange(boolean max) {
         return new Result(tesla.invokeCommand(max ? Charge_SetMax : Charge_SetStd));
