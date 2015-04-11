@@ -198,9 +198,22 @@ public class Options {
         @Override public String toString() { return descriptiveName; }
     }
 
+    public enum DriveType  {
+        DV2W("RWD"),
+        DV4W("AWD"),
+        Unknown("Unknown");
+
+        private String descriptiveName;
+
+        DriveType(String name) { this.descriptiveName = name; }
+
+        @Override public String toString() { return descriptiveName; }
+    }
+
     public enum Model {
         S60("S60"),
         S85("S85"),
+        S85D("S85D"),
         P85("P85"),
         P85Plus("P85+"),
         P85D("P85D");
@@ -291,9 +304,15 @@ public class Options {
         return optionToEnum(PaintColor.class, "PB", "PM", "PP"); }
     public SeatType seatType() {
         return optionToEnum(SeatType.class, "IB", "IP", "IZ", "IS"); }
+    public DriveType driveType() {
+        DriveType dt = optionToEnum(DriveType.class, "DV");
+        if (dt == Options.DriveType.Unknown) { return Options.DriveType.DV2W; }
+        return dt;
+    }
     public Model model() {
         if (isP85D()) { return Model.P85D; }
-        if (isPerfPlus()) { return Model.P85Plus; }
+        else if (isAWD()) { return Model.S85D; }
+        else if (isPerfPlus()) { return Model.P85Plus; }
         else if (isPerformance()) { return Model.P85; }
         else if (batteryType() == Options.BatteryType.BT85) { return Model.S85; } 
         return Model.S60;
@@ -303,6 +322,7 @@ public class Options {
     public boolean isPerformance() { return hasOption("PF"); }
     public boolean isPerfPlus() { return hasOption("PX") || wheelType() == WheelType.WTSG; }
     public boolean isP85D() { return hasOption("PD"); }
+    public boolean isAWD() { return driveType() == Options.DriveType.DV4W; }
     public boolean hasThirdRow() { return hasOption("TR"); }
     public boolean hasAirSuspension() { return hasOption("SU"); }
     public boolean hasSupercharger() { return hasOption("SC") || isPerfPlus(); }    
@@ -334,6 +354,7 @@ public class Options {
                 "    Year: %d\n" +
                 "    Trim: %s\n" +
                 "    Drive Side: %s\n" +
+                "    Dual Motor: %s\n" +
                 "    Performance Options: [\n" +
                 "       Performance: %b\n" +
                 "       Performance+: %b\n" +
@@ -377,7 +398,7 @@ public class Options {
                 "        Fog Lamps: %b\n" +
                 "        Cold Weather Package: %b\n" +
                 "    ]\n",
-                region(), productionYear(), trimLevel(), driveSide(),
+                region(), productionYear(), trimLevel(), driveSide(), isAWD(),
                 isPerformance(), isPerfPlus(), isP85D(),
                 hasPerfExterior(), hasPerfPowertrain(),
                 batteryType(), paintColor(), roofType(), wheelType(),
