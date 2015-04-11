@@ -44,7 +44,7 @@ This project assumes a directory structure that looks like this:
 	ThirdParty				-- A repository for third party library dependencies
 		apache
 			commons-codec-1.10
-			commons-lang3-3.3.2
+			commons-lang3-3.4
 			commons-logging-1.1.3
 		geocoder
 		google-gson-2.2.4
@@ -75,11 +75,11 @@ Be sure to either set these variables or adapt the commands below:
 	unzip commons-codec-1.10-bin.zip
     rm commons-codec-1.10-bin.zip
 
-	curl -s -O http://mirror.cc.columbia.edu/pub/software/apache//commons/lang/binaries/commons-lang3-3.3.2-bin.zip
-	unzip commons-lang3-3.3.2-bin.zip
-    rm commons-lang3-3.3.2-bin.zip
+	curl -s -O http://www.eng.lsu.edu/mirrors/apache/commons/lang/binaries/commons-lang3-3.4-bin.zip
+	unzip commons-lang3-3.4-bin.zip
+    rm commons-lang3-3.4-bin.zip
 
-	curl -s -O http://apache.mirrors.hoobly.com//commons/logging/binaries/commons-logging-1.1.3-bin.zip
+	curl -s -O http://www.eng.lsu.edu/mirrors/apache/commons/logging/binaries/commons-logging-1.1.3-bin.zip
 	unzip commons-logging-1.1.3-bin.zip
 	rm commons-logging-1.1.3-bin.zip
 
