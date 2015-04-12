@@ -132,6 +132,9 @@ public class Options {
         PMNG("Steel Grey"),
         PPMR("Premium Multicoat Red"),
         PPSR("Premium Signature Red"),
+        PPTI("Titanium"),
+        PMBL("Obsidian Black"),
+        PPSB("Deep Blue Metallic"),
         Unknown("Unknown");
 
         private String descriptiveName;
