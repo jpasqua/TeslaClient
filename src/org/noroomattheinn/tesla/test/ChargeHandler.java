@@ -40,12 +40,12 @@ public class ChargeHandler extends TeslaHandler  {
     
     class StartHandler extends Handler {
         StartHandler() { super("start", "Start Charging"); }
-        @Override public boolean execute() { vehicle.startCharing(); return true; }
+        @Override public boolean execute() { vehicle.startCharging(); return true; }
     }
     
     class StopHandler extends Handler {
         StopHandler() { super("stop", "Stop Charging"); }
-        @Override public boolean execute() { vehicle.stopCharing(); return true; }
+        @Override public boolean execute() { vehicle.stopCharging(); return true; }
     }
     
     class DisplayHandler extends Handler {
