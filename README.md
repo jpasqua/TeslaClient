@@ -24,6 +24,8 @@ Use these programs at your own risk. The authors do not guaranteed the proper fu
 
 [Greyson Fischer](https://github.com/greyson)
 
+[Sune Jakobsson](https://github.com/greyson)
+
 # Preparing your build environment (gradle)
 
 The following command will resolve and download all dependencies, set
@@ -103,4 +105,4 @@ There are two test programs included in the project: <code>BasicTest</code> and 
 
 To use either of these programs you must have active credentials for a Tesla vehicle that has remote access enabled. If you have more than one vehicle, you may select which vehicle to use in the Interactive program. BasicTest will always use the first vehicle returned by the Tesla portal.
 
-To compile and run directly use: ant -Dapplication.args="userName passWord" run
+    To compile and run directly use: ant -Dapplication.args="userName passWord" run
