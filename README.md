@@ -105,4 +105,4 @@ There are two test programs included in the project: <code>BasicTest</code> and 
 
 To use either of these programs you must have active credentials for a Tesla vehicle that has remote access enabled. If you have more than one vehicle, you may select which vehicle to use in the Interactive program. BasicTest will always use the first vehicle returned by the Tesla portal.
 
-    To compile and run <code>BasicTest</code> directly use: ant -Dapplication.args="userName passWord" run
+    To compile and run "BasicTest" directly use: ant -Dapplication.args="userName passWord" run
