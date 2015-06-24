@@ -71,15 +71,15 @@ Be sure to either set these variables or adapt the commands below:
 
 	# Download the apache libraries
 	cd $ROOT/ThirdParty/apache
-	curl -s -O http://www.eng.lsu.edu/mirrors/apache/commons/codec/binaries/commons-codec-1.10-bin.zip
+	wget http://archive.apache.org/dist/commons/codec/binaries/commons-codec-1.10-bin.zip
 	unzip commons-codec-1.10-bin.zip
     rm commons-codec-1.10-bin.zip
 
-	curl -s -O http://mirror.cc.columbia.edu/pub/software/apache//commons/lang/binaries/commons-lang3-3.3.2-bin.zip
+	wget http://archive.apache.org/dist/commons/lang/binaries/commons-lang3-3.3.2-bin.zip
 	unzip commons-lang3-3.3.2-bin.zip
     rm commons-lang3-3.3.2-bin.zip
 
-	curl -s -O http://apache.mirrors.hoobly.com//commons/logging/binaries/commons-logging-1.1.3-bin.zip
+	wget http://archive.apache.org/dist/commons/logging/binaries/commons-logging-1.1.3-bin.zip
 	unzip commons-logging-1.1.3-bin.zip
 	rm commons-logging-1.1.3-bin.zip
 
@@ -102,3 +102,5 @@ Be sure to either set these variables or adapt the commands below:
 There are two test programs included in the project: <code>BasicTest</code> and <code>Interactive</code>. The former simply runs through a sequence of functions in the client library to demonstrate that it is connecting and working. The second presents an interactive shell that allows the user to issue the various commands that are available through the client library.
 
 To use either of these programs you must have active credentials for a Tesla vehicle that has remote access enabled. If you have more than one vehicle, you may select which vehicle to use in the Interactive program. BasicTest will always use the first vehicle returned by the Tesla portal.
+
+To compile and run directly use: ant -Dapplication.args="userName passWord" run
