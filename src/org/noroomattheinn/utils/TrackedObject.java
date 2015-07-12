@@ -13,7 +13,6 @@ import java.util.List;
  * a generic T in a TrackedObject and then you can add trackers. Trackers will be
  * called any time the object is set, EVEN if it is set to the same object or an
  * equal() object. A tracker is like a listener except it is not passed any state.
- * Also, it can be run immediately, or later on the main JavaFX thread. 
  * 
  * @author Joe Pasqua <joe at NoRoomAtTheInn dot org>
  */
@@ -74,6 +73,16 @@ public class TrackedObject<T> {
      * @param newVal    The new value for the TrackedObject
      */
     public void update(T newVal) { if (val != newVal)  set(newVal); }
+
+    /**
+     * Reset the value of the TrackedObject. This is like starting over with
+     * the object, so no trackers are called.
+     * @param newVal    The new value for the TrackedObject
+     */
+    public void reset(T newVal) { 
+        this.val = newVal;
+        this.lastSet = System.currentTimeMillis();
+    }
 
     /**
      * Add a tracker to be called whenever the value is set or updated.

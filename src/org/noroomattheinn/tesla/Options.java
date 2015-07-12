@@ -312,7 +312,11 @@ public class Options {
     public DriveSide driveSide() { return optionToEnum(DriveSide.class, "DR"); }
     public BatteryType batteryType() {
         BatteryType bt = optionToEnum(BatteryType.class, "BT");
-        return (bt == Options.BatteryType.Unknown) ? Options.BatteryType.BT70 : bt;
+        if (bt == Options.BatteryType.Unknown) {
+            if (isP85D() || isPerfPlus()) { return Options.BatteryType.BT85; }
+            return Options.BatteryType.BT70;
+        }
+        return bt;
     }
     public RoofType roofType() { return optionToEnum(RoofType.class, "RF"); }
     public WheelType wheelType() { return optionToEnum(WheelType.class, "WT"); }
