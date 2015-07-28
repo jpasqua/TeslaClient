@@ -267,9 +267,15 @@ public class Options {
         // Deal with the one 3 letter prefix in the options: PBT. Turn this into BT
         optionsString = optionsString.replace("PBT", "BT");
 
-        // Sometimes it appears that a P85+ will have two wheel types: WTSG and WTX0
-        // Only the last is remembered. Make sure it's always WTSG
-        optionsString = optionsString.replace("WTX0", "WTSG");
+        // Sometimes it appears that a P85+ (perhaps other perf models as well)
+        // will have two wheel types listed, the real one and WTX0 or WTX1.
+        // Unfortunately WTX0/X1 are often the last one encountered and gets 
+        // used as the wheel type. We need the real one so ignore WTXO/X1.
+        // The ASSERTION is that it never appears by itself. Other code depends
+        // on that assertion being true.
+        optionsString = optionsString.replace("WTX0", "wtXO");
+        optionsString = optionsString.replace("WTX1", "wtX1");
+        
 
         String[] tokens = optionsString.split(",");
         for (String token : tokens) {
@@ -294,8 +300,8 @@ public class Options {
             // X0 options are handled differently. Speculation is that these are
             // the old way Tesla handled things. In this case we store the whole
             // token as the key and the value.
-            if (prefix.equals("X0"))
-                prefix = token;
+            if (prefix.equals("X0")) prefix = token;
+            
             optionsFound.put(prefix, token);
         }
     }
