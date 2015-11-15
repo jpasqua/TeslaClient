@@ -7,7 +7,8 @@
 package org.noroomattheinn.tesla.test;
 
 import org.noroomattheinn.utils.Handler;
-import org.noroomattheinn.tesla.SnapshotState;
+import org.noroomattheinn.tesla.StreamState;
+import org.noroomattheinn.tesla.Streamer;
 import org.noroomattheinn.tesla.Vehicle;
 import org.noroomattheinn.utils.Utils;
 
@@ -24,12 +25,11 @@ public class StreamingHandler extends TeslaHandler  {
     
     // Private Instance Variables
     //private StreamingState state;
-    private SnapshotState state;
+    private StreamState state;
 
     
     StreamingHandler(Vehicle v) {
         super(Name, Description, "s", v);
-        state = new SnapshotState(v);
         repl.addHandler(new StreamingHandler.DisplayHandler());
         repl.addHandler(new StreamingHandler.StreamHandler());
     }
@@ -42,11 +42,12 @@ public class StreamingHandler extends TeslaHandler  {
     class StreamHandler extends Handler {
         StreamHandler() { super("stream", "Display streaming state", "s"); }
         @Override public boolean execute() {
-            state.refresh();
+            Streamer streamer = vehicle.getStreamer();
+            state = streamer.beginNewStream();
             System.out.println(state);
             for (int i = 0; i < 10; i++) {
                 System.out.println("Streaming Status:");
-                if (state.refreshFromStream()) {
+                if ( (state = streamer.tryExistingStream()) != null) {
                     System.out.println(state);
                 } else {
                     System.out.println("    [No change in state]");
@@ -60,7 +61,8 @@ public class StreamingHandler extends TeslaHandler  {
     class DisplayHandler extends Handler {
         DisplayHandler() { super("display", "Display snapshot state", "d"); }
         @Override public boolean execute() {
-            if (state.refresh()) {
+            state = vehicle.getStreamer().beginNewStream();
+            if (state != null) {
                 System.out.println(state);
             }
             return true;

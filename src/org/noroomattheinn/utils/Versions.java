@@ -44,12 +44,18 @@ public class Versions {
         @XmlElement private String number;
         @XmlElement private Date date;
         @XmlElement private URL url;
+        @XmlElement private URL urlForMac;
+        @XmlElement private URL urlForWindows;
         @XmlElement private Boolean experimental = false;
+        @XmlElement private Boolean invisible = false;
         
         public String getReleaseNumber() { return number; }
         public Date getReleaseDate() { return date; }
         public URL getReleaseURL() { return url; }
+        public URL getMacURL() { return urlForMac; }
+        public URL getWindowsURL() { return urlForWindows; }
         public Boolean getExperimental() { return experimental; }
+        public Boolean getInvisible() { return invisible; }
     }
     
     public List<Release> getReleases() { return releases; }
@@ -65,7 +71,7 @@ public class Versions {
             Unmarshaller jaxbUnmarshaller = jc.createUnmarshaller();
             versions = (Versions)jaxbUnmarshaller.unmarshal(in);
         } catch (IOException|JAXBException ex) {
-            Logger.getLogger(Versions.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(Versions.class.getName()).warning("Problem parsing versions file: " + ex);
         }
 
         return versions;
@@ -73,7 +79,8 @@ public class Versions {
     
     public static void main(String[] args) throws Exception {
         Versions versions = Versions.getVersionInfo(
-                "https://dl.dropboxusercontent.com/u/7045813/VisibleTesla/versions.xml");
+              //"https://dl.dropboxusercontent.com/u/7045813/VisibleTesla/versions.xml");
+                "https://dl.dropboxusercontent.com/u/7045813/VTExtras/test_versions.xml");
         
         
         if (versions == null) {
@@ -82,7 +89,11 @@ public class Versions {
         } else {
             for (Release r : versions.getReleases()) {
                 System.out.println("Version: " + r.getReleaseNumber());
+                System.out.println("Mac URL: " + r.getMacURL());
+                System.out.println("Windows URL: " + r.getWindowsURL());
                 System.out.println("IsExperimental: " + r.getExperimental());
+                System.out.println("IsInvisible: " + r.getInvisible());
+                System.out.println("------------------------------");
             }
 
             JAXBContext jc = JAXBContext.newInstance(Versions.class);

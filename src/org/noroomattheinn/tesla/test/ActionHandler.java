@@ -7,7 +7,6 @@
 package org.noroomattheinn.tesla.test;
 
 import org.noroomattheinn.utils.Handler;
-import org.noroomattheinn.tesla.ActionController;
 import org.noroomattheinn.tesla.Vehicle;
 
 /**
@@ -22,8 +21,6 @@ public class ActionHandler extends TeslaHandler  {
     private static final String Description = "Perform Miscellaneous Actions";
     private static final String Name = "actions";
     
-    // Instance Variables
-    private ActionController controller;
 
     
     //
@@ -32,7 +29,6 @@ public class ActionHandler extends TeslaHandler  {
     
     ActionHandler(Vehicle v) {
         super(Name, Description, v);
-        controller = new ActionController(v);
         repl.addHandler(new ActionHandler.Honk());
         repl.addHandler(new ActionHandler.Flash());
         repl.addHandler(new ActionHandler.Wakeup());
@@ -44,17 +40,17 @@ public class ActionHandler extends TeslaHandler  {
     
     class Honk extends Handler {
         Honk() { super("honk", "Honk the horn", "h"); }
-        public boolean execute() { controller.honk(); return true; }
+        @Override public boolean execute() { vehicle.honk(); return true; }
     }
     
     class Flash extends Handler {
         Flash() { super("flash", "Flash the lights", "f"); }
-        public boolean execute() { controller.flashLights(); return true; }
+        @Override public boolean execute() { vehicle.flashLights(); return true; }
     }
     
     class Wakeup extends Handler {
         Wakeup() { super("wakeup", "Wakeup the car", "w"); }
-        public boolean execute() { controller.wakeUp(); return true; }
+        @Override public boolean execute() { vehicle.wakeUp(); return true; }
     }
     
 }

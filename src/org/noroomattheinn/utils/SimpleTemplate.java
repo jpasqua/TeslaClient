@@ -58,6 +58,7 @@ public class SimpleTemplate {
         }
         return sb.toString();
     }
+    
 /*------------------------------------------------------------------------------
  *
  * PRIVATE - Utility Methods

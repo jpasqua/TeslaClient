@@ -5,6 +5,8 @@ A Java implementation of the client side interface to the Tesla Model S API docu
 +	[Tesla Model S REST API](http://docs.timdorr.apiary.io/)
 +	[Tesla Model S Remote Access Protocol](http://tinyurl.com/mnjyhbb)
 
+**Note:** This version of the library corresponds to the "owner" API from Tesla which came about in the same timeframe as version 6 of the car software. This version is completely incompatible with the old Tesla API and the old version of this library. If you want to continue to use the older library, please refer to tag 0.5.
+
 This is unofficial documentation of the Tesla Model S REST API used by the iOS and Android apps. It features functionality to monitor and control the Model S remotely. The documents are updated as new information is found.
 
 This software and documentation do not come from Tesla Motors Inc.
@@ -21,7 +23,20 @@ Use these programs at your own risk. The authors do not guaranteed the proper fu
 Joe Pasqua (https://github.com/jpasqua ): Author  
 Sune Jakobsson (https://github.com/sunejak ): Bug Fixes
 
-#Preparing your build environment
+[Greyson Fischer](https://github.com/greyson)
+
+[Sune Jakobsson](https://github.com/greyson)
+
+# Preparing your build environment (gradle)
+
+The following command will resolve and download all dependencies, set
+up the classpath, and create the JAR file.  This allows the Tesla
+project to be included in other gradle builds in the usual way (using
+`settings.gradle`)
+
+        > gradle assemble
+
+#Preparing your build environment (Ant/NetBeans)
 
 This project assumes a directory structure that looks like this:
 
@@ -42,18 +57,20 @@ The Tesla/TeslaClient directory corresponds to this github project (TeslaClient.
 
 The following commands will create and populate the hierarchy. It assumes that:
 
-+ <code>$DOWNLOAD</code>is the directory where you downloaded the project from github
-+ <code>$ROOT</code>is where you want to place the overall hierarchy
++ <code>$ROOT</code>is where the Tesla and ThirdParty directories will reside
 
 Be sure to either set these variables or adapt the commands below:
 
 	cd $ROOT
-	mkdir Tesla
-	mv $DOWNLOAD/TeslaClient-master Tesla/TeslaClient
-	mkdir ThirdParty
-	mkdir ThirdParty/apache
-	mkdir ThirdParty/geocoder-java
-	mkdir ThirdParty/resty
+	mkdir $ROOT/Tesla
+    mkdir $ROOT/ThirdParty
+    mkdir $ROOT/ThirdParty/apache
+    mkdir $ROOT/ThirdParty/geocoder-java
+    mkdir $ROOT/ThirdParty/resty
+
+    # Download the TeslaClient repo
+    cd $ROOT/Tesla
+    git clone https://github.com/jpasqua/TeslaClient.git
 
 	# Download the apache libraries
 	cd ThirdParty/apache
@@ -65,19 +82,20 @@ Be sure to either set these variables or adapt the commands below:
 
 	wget http://www.us.apache.org/dist//commons/logging/binaries/commons-logging-1.1.3-bin.zip
 	unzip commons-logging-1.1.3-bin.zip
-	rm *.zip
+	rm commons-logging-1.1.3-bin.zip
 
 	# Download the geocoder library
-	cd ../geocoder-java
+	cd $ROOT/ThirdParty/geocoder-java
 	curl -s -O http://repo1.maven.org/maven2/com/google/code/geocoder-java/geocoder-java/0.15/geocoder-java-0.15.jar
 
 	# Download the gson library
-	cd ..
+	cd $ROOT/ThirdParty
 	curl -s -O http://google-gson.googlecode.com/files/google-gson-2.2.4-release.zip
 	unzip google-gson-2.2.4-release.zip
 	rm google-gson-2.2.4-release.zip
 
 	# Download the resty library
+    cd $ROOT/ThirdParty
 	cd resty
 	curl -s -O http://repo2.maven.org/maven2/us/monoid/web/resty/0.3.2/resty-0.3.2.jar
 	cd ..
@@ -94,3 +112,5 @@ Be sure to either set these variables or adapt the commands below:
 There are two test programs included in the project: <code>BasicTest</code> and <code>Interactive</code>. The former simply runs through a sequence of functions in the client library to demonstrate that it is connecting and working. The second presents an interactive shell that allows the user to issue the various commands that are available through the client library.
 
 To use either of these programs you must have active credentials for a Tesla vehicle that has remote access enabled. If you have more than one vehicle, you may select which vehicle to use in the Interactive program. BasicTest will always use the first vehicle returned by the Tesla portal.
+
+    To compile and run "BasicTest" directly use: ant -Dapplication.args="userName passWord" run

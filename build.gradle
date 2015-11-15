@@ -1,0 +1,26 @@
+apply plugin: 'java'
+
+repositories {
+  jcenter()
+}
+
+sourceSets {
+  main {
+    java {
+	  srcDir 'src'
+	}
+	resources {
+	  srcDir 'src'
+	}
+  }
+}
+
+dependencies {
+  compile 'org.apache.commons:commons-lang3:3.3.2'
+  compile 'commons-codec:commons-codec:1.10'
+  compile 'org.apache.commons:commons-io:1.3.2'
+  compile 'commons-logging:commons-logging:1.1.3'
+  compile 'com.google.code.gson:gson:2.2.4'
+  compile 'us.monoid.web:resty:0.3.2'
+  compile 'com.google.code.geocoder-java:geocoder-java:0.15'
+}

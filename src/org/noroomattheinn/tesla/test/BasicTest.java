@@ -10,13 +10,14 @@ import java.util.List;
 import java.util.logging.Level;
 import org.noroomattheinn.tesla.ChargeState;
 import org.noroomattheinn.tesla.VehicleState;
-import org.noroomattheinn.tesla.DrivingState;
+import org.noroomattheinn.tesla.DriveState;
 import org.noroomattheinn.tesla.GUIState;
 import org.noroomattheinn.tesla.HVACState;
-import org.noroomattheinn.tesla.SnapshotState;
+import org.noroomattheinn.tesla.StreamState;
+import org.noroomattheinn.tesla.Streamer;
 import org.noroomattheinn.tesla.Tesla;
 import org.noroomattheinn.tesla.Vehicle;
-import org.noroomattheinn.utils.Utils;
+//import org.noroomattheinn.utils.Utils;
 
 /**
  * BasicTest
@@ -33,12 +34,12 @@ public class BasicTest {
         Tesla t = new Tesla();
                 
         if (args.length == 2) {
-            if (!t.connect(args[0], args[1], true)) {
+            if (!t.connect(args[0], args[1])) {
                 System.err.println("Unable to connect with supplied u/p");
                 System.exit(1);
             }
-        } else {
-            if (!t.connect()) {
+        } else if (args.length == 3) {  // -t username token
+            if (!t.connectWithToken(args[0], args[1])) {
                 System.err.println("Unable to connect with stored credentials");
                 System.exit(1);
             }
@@ -47,43 +48,63 @@ public class BasicTest {
         
         List<Vehicle> vehicles = t.getVehicles();
         Tesla.logger.log(Level.INFO, "Number of vehicles: {0}", vehicles.size());
-        
+
         for (Vehicle vehicle : vehicles) {
-            SnapshotState ss = new SnapshotState(vehicle);
-            ss.refresh(); System.out.println(ss);
-            while (ss.refreshFromStream()) {
-                System.out.println(ss);
-                Utils.sleep(500);
-            }
             System.out.format("%s\n", vehicle);
             System.out.format("Mobile Enabled: %s\n", vehicle.mobileEnabled());
-            VehicleState vs = new VehicleState(vehicle); vs.refresh();
-            System.out.format("SW Version: %s\n", vs.state.version);
-            System.out.format("Pano Percent: %d\n", vs.state.panoPercent);
-            System.out.format("Pano State: %s\n", vs.state.panoState);
-            System.out.format("DoorState: %s\n", vs);
             
-//            DoorController doorController = new DoorController(vehicle);
-//            doorController.setPano(DoorController.PanoCommand.vent);
-//            ds.refresh();
-//            System.out.format("Pano Percent: %d\n", ds.panoPercent());
-//            System.out.format("Pano State: %s\n", ds.panoState());
-//            System.out.format("VehicleState: %s\n", ds);
+            Streamer streamer = vehicle.getStreamer();
+            StreamState ss = streamer.beginNewStream();
+            if (ss != null) { System.out.println(ss); }
+//            while ((ss = streamer.tryExistingStream()) != null) {
+//                System.out.println(ss);
+//                Utils.sleep(500);
+//            }
+            VehicleState vs = vehicle.queryVehicle();
+            if (vs.valid) {
+                try {
+                    System.out.println(vs.rawState.toString(4));
+                } catch (Exception e) {
+                    System.err.println(e.getMessage());
+                }
+                System.out.format("SW Version: %s\n", vs.version);
+                System.out.format("Pano Percent: %d\n", vs.panoPercent);
+                System.out.format("Pano State: %s\n", vs.panoState);
+                System.out.format("Vehicle State: %s\n", vs);
+            }
+            
+            vehicle.setPano(Vehicle.PanoCommand.vent);
+            vs = vehicle.queryVehicle();
+            if (vs.valid) {
+                System.out.format("Pano Percent: %d\n", vs.panoPercent);
+                System.out.format("Pano State: %s\n", vs.panoState);
+            }
 
-            GUIState gui = new GUIState(vehicle); gui.refresh();
-            System.out.format("Charge Rate Units: %s\n", gui.state.chargeRateUnits);
-            System.out.format("GUIState dump: %s\n", gui.toString());
-            HVACState hvac = new HVACState(vehicle); hvac.refresh();
-            System.out.format("Fan Status: %d\n", hvac.state.fanStatus);
-            ChargeState cs = new ChargeState(vehicle); cs.refresh();
-            System.out.format("FastChargerPresent: %s\n", cs.state.fastChargerPresent);
-            System.out.format(
-                    "SOC Limit: %d, Min %d, Max: %d, Std: %d\n",
-                    cs.state.chargeLimitSOC, cs.state.chargeLimitSOCMin,
-                    cs.state.chargeLimitSOCMax, cs.state.chargeLimitSOCStd);
-            System.out.format("ChargeState dump: %s\n", cs.toString());
-            DrivingState drs = new DrivingState(vehicle); drs.refresh();
-            System.out.format("DrivingState dump: %s\n", drs.toString());
+            GUIState gui = vehicle.queryGUI();
+            if (gui.valid) {
+                System.out.format("Charge Rate Units: %s\n", gui.chargeRateUnits);
+                System.out.format("GUIState: %s\n", gui.toString());        
+            }
+            
+            HVACState hvac = vehicle.queryHVAC();
+            if (hvac.valid) {
+                System.out.format("Fan Status: %d\n", hvac.fanStatus);        
+            }
+            
+            ChargeState cs = vehicle.queryCharge();
+            if (cs.valid) {
+                System.out.format("FastChargerPresent: %s\n", cs.fastChargerPresent);
+                System.out.format(
+                        "SOC Limit: %d, Min %d, Max: %d, Std: %d\n",
+                        cs.chargeLimitSOC, cs.chargeLimitSOCMin,
+                        cs.chargeLimitSOCMax, cs.chargeLimitSOCStd);
+                System.out.format("ChargeState: %s\n", cs.toString());
+            }
+            
+            DriveState driveState = vehicle.queryDrive();
+            if (driveState.valid) {
+                System.out.format("DriveState: %s\n", driveState.toString());
+            }
 
             
             //ActionController actions = new ActionController(vehicle);

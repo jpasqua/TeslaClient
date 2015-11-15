@@ -16,6 +16,7 @@ import com.google.code.geocoder.model.LatLng;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import org.noroomattheinn.tesla.Tesla;
 import us.monoid.json.JSONArray;
 import us.monoid.json.JSONException;
@@ -30,6 +31,8 @@ import us.monoid.web.Resty;
 
 public class GeoUtils {
 
+    private static final Map<String,String> cache = new LRUMap<>(10);
+    
     //
     // Public Class Methods
     //
@@ -42,9 +45,19 @@ public class GeoUtils {
         }
 
     public static String getAddrForLatLong(String lat, String lng) {
+        String resultAddr;
         Geocoder geocoder = new Geocoder();
         GeocoderRequest geocoderRequest;
         GeocodeResponse geocoderResponse;
+        
+        // Round to 5 digits to avoid jitter
+        lat = String.format("%.5f", Double.valueOf(lat));
+        lng = String.format("%.5f", Double.valueOf(lng));
+        
+        String cacheKey = lat+lng;
+        synchronized (cache) { resultAddr = cache.get(cacheKey); }
+        if (resultAddr != null)
+            return resultAddr;
 
         geocoderRequest = new GeocoderRequestBuilder()
                 .setLocation(new LatLng(lat, lng))
@@ -55,7 +68,36 @@ public class GeoUtils {
                 if (!geocoderResponse.getResults().isEmpty()) {
                     GeocoderResult geocoderResult = // Get the first result
                             geocoderResponse.getResults().iterator().next();
-                    return geocoderResult.getFormattedAddress();
+                    resultAddr = geocoderResult.getFormattedAddress();
+                    synchronized (cache) { cache.put(cacheKey, resultAddr); }
+                    return resultAddr;
+                }
+            }
+        }
+        return null;
+    }
+    
+    public static double[] getLatLngForAddr(String addr) {
+        if (addr == null) return null;
+        
+        Geocoder geocoder = new Geocoder();
+        GeocoderRequest geocoderRequest;
+        GeocodeResponse geocoderResponse;
+
+        geocoderRequest = new GeocoderRequestBuilder()
+                .setAddress(addr)
+                .setLanguage("en").getGeocoderRequest();
+        geocoderResponse = geocoder.geocode(geocoderRequest);
+        if (geocoderResponse != null) {
+            if (geocoderResponse.getStatus() == GeocoderStatus.OK) {
+                if (!geocoderResponse.getResults().isEmpty()) {
+                    GeocoderResult geocoderResult = // Get the first result
+                            geocoderResponse.getResults().iterator().next();
+                    double[] loc = new double[2];
+                    LatLng ll = geocoderResult.getGeometry().getLocation();
+                    loc[0] = ll.getLat().doubleValue();
+                    loc[1] = ll.getLng().doubleValue();
+                    return loc;
                 }
             }
         }
@@ -179,5 +221,61 @@ public class GeoUtils {
                     "    Resoultion: %f\n" +
                     "]\n", lat, lng, elevation, resolution);
         }
+    }
+    
+    public static abstract class Area implements LocationSource, Comparable<Area> {
+        public final double lat;
+        public final double lng;
+        public final String name;
+
+        public Area(double lat, double lng, String name) {
+            this.lat = lat;
+            this.lng = lng;
+            this.name = name;
+        }
+        
+        @Override public double getLat() { return lat; }
+
+        @Override public double getLng() { return lng; }
+        
+        public String getName() { return name; }
+        
+        /**
+         * An implementation of compareTo that really is about intersection.
+         * Subclasses must override this method.
+         * @param other The other Area to compare to
+         * @return  -1  If the 2 areas do not intersect
+         *           0  If the 2 areas intersect
+         *           1  Never returned
+         */
+        @Override abstract public int compareTo(Area o);
+    }
+    
+    public static class CircularArea extends Area {
+        public final double radius;
+        
+        public CircularArea() {
+            this(0, 0, 0, "-");
+        }
+
+        public CircularArea(double lat, double lng, double radius, String name) {
+            super(lat, lng, name);
+            this.radius = radius;
+        }
+
+        @Override public int compareTo(Area other) {
+            if (intersects(other)) return 0;
+            return -1;
+        }
+            
+        public boolean intersects(Area other) {
+            if (other instanceof CircularArea) {
+                double distance = GeoUtils.distance(lat, lng, other.lat, other.lng);
+                double coverage = radius + ((CircularArea)other).radius;
+                return distance <= coverage;
+            }
+            return false;
+        }
+
     }
 }

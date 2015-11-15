@@ -5,16 +5,31 @@
  */
 package org.noroomattheinn.tesla;
 
+import org.noroomattheinn.utils.RestHelper;
+import us.monoid.json.JSONObject;
+
 /**
- * BaseState
+ * BaseState: A lightweight superclass of all State objects. Stores some shared
+ * public state and does some common initialization in the constructor.
  * 
  * @author Joe Pasqua <joe at NoRoomAtTheInn dot org>
  */
-public class BaseState {
+public abstract class BaseState {
+/*==============================================================================
+ * -------                                                               -------
+ * -------              Public Interface To This Class                   ------- 
+ * -------                                                               -------
+ *============================================================================*/
+
+    protected static final JSONObject emptyJSONObj = RestHelper.newJSONObject("{}");
     
-    public long timestamp;
+    public final long         timestamp;
+    public final JSONObject   rawState;
+    public final boolean      valid;
     
-    public BaseState() {
+    public BaseState(JSONObject rawState) {
         this.timestamp = System.currentTimeMillis();
+        this.rawState = rawState;
+        valid = (rawState.length() > 0);
     }
 }

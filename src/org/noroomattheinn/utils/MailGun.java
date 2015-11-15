@@ -7,9 +7,11 @@
 package org.noroomattheinn.utils;
 
 import java.io.IOException;
-import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.lang3.StringUtils;
 import org.noroomattheinn.tesla.Tesla;
+import static org.noroomattheinn.tesla.Tesla.logger;
 import us.monoid.web.FormContent;
+import us.monoid.web.Resty;
 import us.monoid.web.TextResource;
 
 /**
@@ -17,18 +19,45 @@ import us.monoid.web.TextResource;
  * @author Joe Pasqua <joe at NoRoomAtTheInn dot org>
  */
 public class MailGun {
+    private static MailGun defaultInstance = null;
+    
     private static final String SendEnpoint =
             "https://api.mailgun.net/v2/visibletesla.com/messages";
 
-    private RestyWrapper api;
+    private Resty api;
 
+    public static void createDefaultInstance(String user, String auth) {
+        defaultInstance = new MailGun(user, auth);
+    }
+    
+    public static MailGun get() { return defaultInstance; }
+    
     public MailGun(String user, String auth) {
-        api = new RestyWrapper();
+        api = RestHelper.getInstance();
         setAuthHeader(api, user, auth);
     }
 
+    public boolean send(String to, String message) {
+        final int SubjectLength = 30;
+        String subject = StringUtils.left(message, SubjectLength);
+        if (message.length() > SubjectLength) {
+            subject = subject + "...";
+        }
+        return send(to, subject, message);
+    }
+
     public boolean send(String to, String subject, String message) {
-        FormContent fc = RestyWrapper.form(
+        if (subject == null) subject = "";
+        if ((message == null || message.isEmpty()) && subject.isEmpty()) {
+            logger.warning("No message or subject specified, message not sent");
+            return false;
+        }
+        if (to == null || to.isEmpty()) {
+            logger.warning("No recipient specified, message not sent: " + message);
+            return false;
+        }
+        to = to.replaceAll("\\s+", "");  // In case there is a comma-separated list of addresses
+        FormContent fc = Resty.form(
                 "from=notifier@visibletesla.com" +
                 "&to="+to +
                 "&subject="+subject + 
@@ -44,9 +73,9 @@ public class MailGun {
         return true;
     }
 
-    private void setAuthHeader(RestyWrapper api, String username, String authToken) {
+    private void setAuthHeader(Resty api, String username, String authToken) {
         byte[] authString = (username + ":" + authToken).getBytes();
-        String encodedString = Base64.encodeBase64String(authString);
+        String encodedString = Utils.toB64(authString);
         api.withHeader("Authorization", "Basic " + encodedString);
     }
 }
