@@ -7,3 +7,5 @@
 /Interactive
 /.DS_Store
 /.gradle
+/.idea
+/target
