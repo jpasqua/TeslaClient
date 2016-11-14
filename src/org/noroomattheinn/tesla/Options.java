@@ -36,6 +36,7 @@ public class Options {
         WTTP("Turbine 19\""),
         WTTG("Turbine 19\" Charcoal"),
         WTGP("Turbine 19\" Charcoal"),
+        WT20("Slipstream 20\" Silver"),
         WT21("Silver 21\""),
         WT2E("Silver 21\" Euro"),
         WTSS("Super 21\" Silver"),
@@ -94,6 +95,7 @@ public class Options {
     }
 
     public enum RoofType {
+        RFPX("Model X - Falcon Wings"),
         RFBC("Body Color"),
         RFPO("Panoramic"),
         RFBK("Black"),
@@ -161,6 +163,7 @@ public class Options {
     }
 
     public enum DecorType {
+        IDHM("Abachi Matte"),
         IDCF("Carbon Fiber"),
         IDLW("Lacewood"),
         IDOM("Obeche Matte"),
@@ -178,6 +181,7 @@ public class Options {
     }
     
     public enum BatteryType  {
+        BTX4("Model X 90KWh"),
         BT85("85kWh"),
         BT70("70kWh"),
         BT60("60kWh"),
