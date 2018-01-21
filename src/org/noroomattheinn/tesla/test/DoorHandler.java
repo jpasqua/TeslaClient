@@ -34,6 +34,7 @@ public class DoorHandler extends TeslaHandler  {
         repl.addHandler(new DoorHandler.UnlockHandler());
         repl.addHandler(new DoorHandler.PortHandler());
         repl.addHandler(new DoorHandler.PanoHandler());
+        repl.addHandler(new DoorHandler.PanoPercentHandler());
         repl.addHandler(new DoorHandler.DisplayHandler());
     }
     
@@ -75,6 +76,15 @@ public class DoorHandler extends TeslaHandler  {
             PanoCommand cmd = PanoCommand.valueOf(CLUtils.chooseOption(
                     "Pano Command", PanoCommand.values()));
             vehicle.setPano(cmd);
+            return true;
+        }
+    }
+
+    class PanoPercentHandler extends Handler {
+        PanoPercentHandler() { super("pano_percent", "Control the roof precisely", "r"); }
+        @Override public boolean execute() {
+            int percent = (int)CLUtils.getNumberInRange("Roof Percent", 0, 100);
+            vehicle.setPanoPercent(percent);
             return true;
         }
     }

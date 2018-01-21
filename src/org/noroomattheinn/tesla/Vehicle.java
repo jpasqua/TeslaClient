@@ -307,6 +307,13 @@ public class Vehicle {
         return new Result(tesla.invokeCommand(Doors_Sunroof, payload));
     }
     
+    public Result setPanoPercent(int percent){
+	 if (percent < 0 || percent > 100)
+            return new Result(false, "value out of range");
+        String payload = String.format("{'state' : 'move', 'percent' : '%d'}", percent);
+        return new Result(tesla.invokeCommand(Doors_Sunroof, payload));
+    }
+    
     public Result stopPano() {
         return new Result(tesla.invokeCommand(Doors_Sunroof, "{'state' : 'stop'}"));
     }
