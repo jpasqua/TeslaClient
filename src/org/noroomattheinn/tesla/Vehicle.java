@@ -9,6 +9,7 @@ package org.noroomattheinn.tesla;
 import java.util.Locale;
 import java.util.logging.Level;
 import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.noroomattheinn.utils.Utils;
 import us.monoid.json.JSONArray;
 import us.monoid.json.JSONException;
@@ -46,6 +47,7 @@ public class Vehicle {
     private final String    Doors_OpenChargePort, Doors_Unlock, Doors_Lock,
                             Doors_Sunroof, Doors_Trunk;
     private final String    Action_Honk, Action_Flash, Action_Wakeup, Action_RemoteStart;
+    private final String    Valet_Toggle, Valet_Clear_Pin;
 
 
 /*------------------------------------------------------------------------------
@@ -141,7 +143,11 @@ public class Vehicle {
         Action_Honk = tesla.vehicleCommand(vehicleID, "honk_horn");
         Action_Flash = tesla.vehicleCommand(vehicleID, "flash_lights");
         Action_RemoteStart = tesla.vehicleCommand(vehicleID, "remote_start_drive");
-        Action_Wakeup = tesla.vehicleSpecific(vehicleID, "wake_up");        
+        Action_Wakeup = tesla.vehicleSpecific(vehicleID, "wake_up");
+
+        // Initialize Valet endpoints
+        Valet_Toggle = tesla.vehicleCommand(vehicleID, "set_valet_mode");
+        Valet_Clear_Pin = tesla.vehicleCommand(vehicleID, "reset_valet_pin");
     }
     
     
@@ -332,6 +338,29 @@ public class Vehicle {
 
     public Result wakeUp() {
         return new Result(tesla.invokeCommand(Action_Wakeup));
+    }
+
+/*------------------------------------------------------------------------------
+ *
+ * Methods to control Valet mode
+ *
+ *----------------------------------------------------------------------------*/
+
+    public Result valet(boolean on) {
+        String payload = String.format("{'on' : %b}", on);
+        return new Result(tesla.invokeCommand(Valet_Toggle, payload));
+    }
+
+    // PIN will be ignored unless there is no PIN set. Call clearValetPin() first to always set a new PIN.
+    public Result valet(boolean on, String pin){
+        if(pin.length() != 4 || !NumberUtils.isDigits(pin))
+            return new Result(false, "pin must be a 4 digit string");
+        String payload = String.format("{'on' : %b, 'password' : '%s'}", on, pin);
+        return new Result(tesla.invokeCommand(Valet_Toggle, payload));
+    }
+
+    public Result clearValetPin(){
+        return new Result(tesla.invokeCommand(Valet_Clear_Pin));
     }
     
 /*------------------------------------------------------------------------------
