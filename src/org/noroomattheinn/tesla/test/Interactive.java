@@ -59,6 +59,7 @@ public class Interactive  {
             repl.addHandler(new HVACHandler(selectedVehicle));
             repl.addHandler(new ActionHandler(selectedVehicle));
             repl.addHandler(new DoorHandler(selectedVehicle));
+            repl.addHandler(new ValetHandler(selectedVehicle));
             repl.addHandler(new LocationHandler(selectedVehicle));
             repl.addHandler(new StreamingHandler(selectedVehicle));
             addedSubHandlers = true;
